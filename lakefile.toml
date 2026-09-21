@@ -1,0 +1,9 @@
+name = "trident-3sat-to-3col"
+defaultTargets = ["sweep"]
+
+[[lean_lib]]
+name = "Color"
+
+[[lean_exe]]
+name = "sweep"
+root = "Sweep"

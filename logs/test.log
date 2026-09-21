@@ -1,0 +1,18 @@
+$ lake exe sweep --test
+ok  N=10: binom(k,2)+6k = 30 free pairs
+ok  N=10: k fixed vertices have binom(k,2)+4k = 22 switches
+    N=10: unconstrained 2^30, S3-symmetric 4265984 (about 2^22)
+ok  N=11: binom(k,2)+6k = 40 free pairs
+ok  N=11: k fixed vertices have binom(k,2)+4k = 30 switches
+    N=11: unconstrained 2^40, S3-symmetric 1082527744 (about 2^30)
+ok  N=12: binom(k,2)+6k = 51 free pairs
+ok  N=12: k fixed vertices have binom(k,2)+4k = 39 switches
+    N=12: unconstrained 2^51, S3-symmetric 551956005888 (about 2^39)
+ok  N=13: binom(k,2)+6k = 63 free pairs
+ok  N=13: k fixed vertices have binom(k,2)+4k = 49 switches
+    N=13: unconstrained 2^63, S3-symmetric 564062654070784 (about 2^49)
+ok  two size-3 orbits: 2^14 candidates
+ok  trident (Fig. 2(c)) is valid
+ok  Kleinberg-Tardos (Fig. 2(a)) is valid
+ok  OR-chain (Fig. 1(c)) is valid
+ok  Sharma-Chaudhari (Fig. 2(b)) rejects (T,T,T)

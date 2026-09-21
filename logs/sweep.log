@@ -1,0 +1,14 @@
+$ lake exe sweep --max=6
+N=9 [3]: K=3 switches=6 candidates=2^6 leaves=21 pruned=43 valid=0 (1 ms)
+N=10 [1, 3]: K=5 switches=11 candidates=2^11 leaves=386 pruned=1662 valid=0 (8 ms)
+N=11 [2, 3]: K=6 switches=12 candidates=2^12 leaves=513 pruned=3583 valid=0 (8 ms)
+N=11 [1, 1, 3]: K=8 switches=17 candidates=2^17 leaves=12817 pruned=118255 valid=0 (24 ms)
+N=12 [6]: K=7 switches=10 candidates=2^10 leaves=94 pruned=930 valid=0 (6 ms)
+N=12 [3, 3]: K=8 switches=14 candidates=2^14 leaves=1204 pruned=15180 valid=2 (8 ms)
+  valid: x0-6 GT-6 x1-7 GT-7 x2-8 GT-8 6-9 7-10 9-10 8-11 9-11 10-11
+  is the trident: true
+  valid: 6-7 6-8 7-8 x0-9 GT-9 6-9 x1-10 GT-10 7-10 x2-11 GT-11 8-11
+  is the trident: true
+N=12 [1, 2, 3]: K=9 switches=18 candidates=2^18 leaves=16391 pruned=245753 valid=0 (35 ms)
+N=12 [1, 1, 1, 3]: K=12 switches=24 candidates=2^24 leaves=759395 pruned=16017821 valid=0 (1188 ms)
+2 valid gadget(s) with N <= 12

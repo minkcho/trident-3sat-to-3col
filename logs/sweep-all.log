@@ -1,0 +1,30 @@
+$ lake exe sweep --max=6 --all
+N=6 []: K=0 switches=0 candidates=2^0 leaves=1 pruned=0 valid=0 (2 ms)
+N=7 [1]: K=1 switches=4 candidates=2^4 leaves=11 pruned=5 valid=0 (1 ms)
+N=8 [2]: K=2 switches=5 candidates=2^5 leaves=15 pruned=17 valid=0 (1 ms)
+N=8 [1, 1]: K=3 switches=9 candidates=2^9 leaves=215 pruned=297 valid=0 (4 ms)
+N=9 [3]: K=3 switches=6 candidates=2^6 leaves=21 pruned=43 valid=0 (1 ms)
+N=9 [1, 2]: K=4 switches=10 candidates=2^10 leaves=286 pruned=738 valid=0 (8 ms)
+N=9 [1, 1, 1]: K=6 switches=15 candidates=2^15 leaves=7542 pruned=25226 valid=0 (29 ms)
+N=10 [1, 3]: K=5 switches=11 candidates=2^11 leaves=386 pruned=1662 valid=0 (8 ms)
+N=10 [2, 2]: K=6 switches=12 candidates=2^12 leaves=713 pruned=3383 valid=0 (18 ms)
+N=10 [1, 1, 2]: K=7 switches=16 candidates=2^16 leaves=9621 pruned=55915 valid=0 (35 ms)
+N=10 [1, 1, 1, 1]: K=10 switches=22 candidates=2^22 leaves=467509 pruned=3726795 valid=0 (801 ms)
+N=11 [2, 3]: K=6 switches=12 candidates=2^12 leaves=513 pruned=3583 valid=0 (10 ms)
+N=11 [1, 1, 3]: K=8 switches=17 candidates=2^17 leaves=12817 pruned=118255 valid=0 (69 ms)
+N=11 [1, 2, 2]: K=9 switches=18 candidates=2^18 leaves=23007 pruned=239137 valid=0 (67 ms)
+N=11 [1, 1, 1, 2]: K=11 switches=23 candidates=2^23 leaves=570421 pruned=7818187 valid=0 (1141 ms)
+N=11 [1, 1, 1, 1, 1]: K=15 switches=30 candidates=2^30 leaves=49987943 pruned=1023753881 valid=0 (89820 ms)
+N=12 [6]: K=7 switches=10 candidates=2^10 leaves=94 pruned=930 valid=0 (24 ms)
+N=12 [3, 3]: K=8 switches=14 candidates=2^14 leaves=1204 pruned=15180 valid=2 (28 ms)
+  valid: x0-6 GT-6 x1-7 GT-7 x2-8 GT-8 6-9 7-10 9-10 8-11 9-11 10-11
+  is the trident: true
+  valid: 6-7 6-8 7-8 x0-9 GT-9 6-9 x1-10 GT-10 7-10 x2-11 GT-11 8-11
+  is the trident: true
+N=12 [1, 2, 3]: K=9 switches=18 candidates=2^18 leaves=16391 pruned=245753 valid=0 (55 ms)
+N=12 [2, 2, 2]: K=12 switches=21 candidates=2^21 leaves=99428 pruned=1997724 valid=0 (293 ms)
+N=12 [1, 1, 1, 3]: K=12 switches=24 candidates=2^24 leaves=759395 pruned=16017821 valid=0 (1857 ms)
+N=12 [1, 1, 2, 2]: K=13 switches=25 candidates=2^25 leaves=1288842 pruned=32265590 valid=0 (2965 ms)
+N=12 [1, 1, 1, 1, 2]: K=16 switches=31 candidates=2^31 leaves=58643092 pruned=2088840556 valid=0 (133269 ms)
+N=12 [1, 1, 1, 1, 1, 1]: K=21 switches=39 candidates=2^39 leaves=9023791282 pruned=540732022606 valid=0 (19673502 ms)
+2 valid gadget(s) with N <= 12
