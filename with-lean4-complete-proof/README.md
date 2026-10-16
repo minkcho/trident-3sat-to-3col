@@ -5,6 +5,15 @@ uniqueness of the trident among S3-symmetric clause gadgets for the
 reduction from 3SAT to 3-coloring, together with a verified search for the
 cases that are not re-run at build time.
 
+## Background
+
+We first found the symmetric gadget with Lean used as a programming
+language. An executable search over concrete candidate gadgets, the
+enumeration in the parent folder, returned the trident. Building on that
+result, we used the Lean theorem prover to complete the formal
+verification in this folder. The verification came after the paper was
+submitted, so the paper reports only the enumeration.
+
 ## What is proved
 
 **The search is correct.** The following are proved, so a run of
