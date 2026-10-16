@@ -10,7 +10,7 @@ gadget for the reduction from 3SAT to graph 3-coloring (Theorem 16). This
 program confirms it by machine: among all S3-symmetric candidate gadgets with
 at most twelve vertices, the only valid one is the trident.
 
-The enumeration is two files of Lean 4, with no dependencies:
+Two files of Lean 4, no dependencies:
 
 - `Color.lean`: the 3-coloring check (is a gadget valid?)
 - `Sweep.lean`: the loop (every candidate, composition by composition)
@@ -111,24 +111,6 @@ binom(k,2) + 4k switches for k fixed vertices; Table 1 (2^30, 2^40, 2^51,
 2^63 unconstrained; about 2^22, 2^30, 2^39, 2^49 S3-symmetric); the trident,
 the Kleinberg-Tardos gadget and the OR-chain are valid, and the
 Sharma-Chaudhari gadget rejects (T,T,T).
-
-## Lean 4 proof of minimality and uniqueness
-
-We found the trident with the enumeration above, which uses Lean as a
-programming language to search concrete candidates. That search is what
-the paper reports. Building on it, we then completed a formal verification
-with the Lean theorem prover, after the paper was submitted.
-
-The folder [`with-lean4-complete-proof/`](with-lean4-complete-proof/) is a
-separate Lean 4 project with Mathlib. It is a machine-checked proof that the
-trident is the minimum S3-symmetric clause gadget.
-- The search is proved sound and complete.
-- At build time it proves that no S3-symmetric gadget exists with N ≤ 9.
-- At build time it also proves that in `[3, 3]` (N = 12) the only valid
-  gadget is the trident.
-
-The remaining compositions up to N = 12 are covered by a run of its verified
-search. See its README for the theorems, the trusted base and the build.
 
 ## Provenance
 
