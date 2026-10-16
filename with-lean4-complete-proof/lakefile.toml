@@ -1,4 +1,4 @@
-name = "atlas-trident-with-proof"
+name = "trident-symmetric-gadget-proof"
 defaultTargets = ["atlas"]
 
 [[require]]
@@ -9,14 +9,6 @@ rev = "v4.33.0"
 [[lean_lib]]
 name = "atlas"
 globs = ["atlas.+"]
-
-[[lean_exe]]
-name = "atlas-tests"
-root = "atlas.Tests"
-
-[[lean_exe]]
-name = "atlas-demo"
-root = "atlas.Demo"
 
 [[lean_exe]]
 name = "atlas-sweep"

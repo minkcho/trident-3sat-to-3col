@@ -112,16 +112,18 @@ binom(k,2) + 4k switches for k fixed vertices; Table 1 (2^30, 2^40, 2^51,
 the Kleinberg-Tardos gadget and the OR-chain are valid, and the
 Sharma-Chaudhari gadget rejects (T,T,T).
 
-## Complete Lean 4 proof
+## Lean 4 proof of minimality and uniqueness
 
 The folder [`with-lean4-complete-proof/`](with-lean4-complete-proof/) is a
-separate Lean 4 project with Mathlib. It proves the search sound and
-complete, and it re-runs the small symmetric slices and the trident slice at
-build time: no symmetric gadget with N ≤ 9, and in `[3, 3]` exactly the two
-tridents. It also proves the reduction itself: for every well-formed
-formula, the trident assembly is 3-colorable with only the palette pinned
-iff the formula is satisfiable. See its README for the theorems, the
-trusted base and the build.
+separate Lean 4 project with Mathlib. It is a machine-checked proof that the
+trident is the minimum S3-symmetric clause gadget.
+- The search is proved sound and complete.
+- At build time it proves that no S3-symmetric gadget exists with N ≤ 9.
+- At build time it also proves that in `[3, 3]` (N = 12) the only valid
+  gadget is the trident.
+
+The remaining compositions up to N = 12 are covered by a run of its verified
+search. See its README for the theorems, the trusted base and the build.
 
 ## Provenance
 
