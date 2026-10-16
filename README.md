@@ -114,6 +114,11 @@ Sharma-Chaudhari gadget rejects (T,T,T).
 
 ## Lean 4 proof of minimality and uniqueness
 
+We found the trident with the enumeration above, which uses Lean as a
+programming language to search concrete candidates. That search is what
+the paper reports. Building on it, we then completed a formal verification
+with the Lean theorem prover, after the paper was submitted.
+
 The folder [`with-lean4-complete-proof/`](with-lean4-complete-proof/) is a
 separate Lean 4 project with Mathlib. It is a machine-checked proof that the
 trident is the minimum S3-symmetric clause gadget.
