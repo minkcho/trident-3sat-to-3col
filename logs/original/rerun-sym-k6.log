@@ -1,0 +1,26 @@
+✔ [13/14] Built atlas.Sweep:c.o (267ms)
+✔ [14/14] Built «atlas-sweep»:exe (111ms)
+sweep: 3-coloring, aux vertices 0..6, symmetry=true, layer-bearing compositions only
+k = 0 auxiliary vertices:
+  (no compositions)
+k = 1 auxiliary vertices:
+  (no compositions)
+k = 2 auxiliary vertices:
+  (no compositions)
+k = 3 auxiliary vertices:
+  [parts=[3]] N=9, candidates=256 (leaves=256, pruned=0), found=0, 19ms
+k = 4 auxiliary vertices:
+  [parts=[1, 3]] N=10, candidates=8,192 (leaves=2,048, pruned=6,144), found=0, 117ms
+k = 5 auxiliary vertices:
+  [parts=[1, 1, 3]] N=11, candidates=524,288 (leaves=72,192, pruned=452,096), found=0, 7537ms
+  [parts=[2, 3]] N=11, candidates=16,384 (leaves=3,072, pruned=13,312), found=0, 385ms
+k = 6 auxiliary vertices:
+  [parts=[1, 1, 1, 3]] N=12, candidates=67,108,864 (leaves=4,595,200, pruned=62,513,664), found=0, 906931ms
+  [parts=[1, 2, 3]] N=12, candidates=1,048,576 (leaves=112,128, pruned=936,448), found=0, 25125ms
+  [parts=[3, 3]] N=12, candidates=65,536 (leaves=8,960, pruned=56,576), found=2, 1929ms
+    k=1: a0.0-a1.0, a0.0-a2.0, a0.1-a1.1, a0.1-a2.0, a0.2-a1.2, a0.2-a2.0, a1.0-a1.1, a1.0-a1.2, a1.1-a1.2, a2.0-a3.0, a2.0-a4.0, a3.0-a4.0, x0-a0.0, x0-a4.0, x1-a0.1, x1-a4.0, x2-a0.2, x2-a4.0
+    report: reports/three_coloring_3-3_1.tex
+    k=1: a0.0-a0.1, a0.0-a0.2, a0.0-a1.0, a0.1-a0.2, a0.1-a1.1, a0.2-a1.2, a1.0-a2.0, a1.1-a2.0, a1.2-a2.0, a2.0-a3.0, a2.0-a4.0, a3.0-a4.0, x0-a1.0, x0-a4.0, x1-a1.1, x1-a4.0, x2-a1.2, x2-a4.0
+    report: reports/three_coloring_3-3_2.tex
+  [parts=[6]] N=12, candidates=4,096 (leaves=2,048, pruned=2,048), found=0, 271ms
+sweep complete: 2 valid gadget(s) up to 6 auxiliary vertices
