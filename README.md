@@ -76,7 +76,7 @@ candidate the eight inputs collapse to four classes: FFF, TFF, TTF, TTT.
 
 ## Results
 
-Lean 4.33.0. The full output is in `logs/`.
+Lean 4.33.0. The full output is in `logs/`; the original program's output is in `logs/original/`.
 
 `lake exe sweep --max=6` (`logs/sweep.log`; Apple M1 Max, about two seconds):
 
@@ -116,11 +116,17 @@ Sharma-Chaudhari gadget rejects (T,T,T).
 
 The code was written by Claude (Anthropic) from the definitions in the paper
 and from the authors' original enumeration program, of which it is a shorter
-re-implementation. Both programs were run on the compositions `[3]`,
-`[1, 3]`, `[2, 3]`, `[1, 1, 3]`, `[6]` and `[3, 3]`: they report the same
-valid gadgets, and the original counts four times as many candidates because
+re-implementation. Both programs were run on the eight compositions with a
+size-3 or a free orbit and N <= 12: they report the same valid gadgets, two
+on `[3, 3]`, and the original counts four times as many candidates because
 it also switches the literal -- G_T and literal -- G_F pairs, which are
 excluded here.
+
+The original program belongs to a larger framework that is not public. Its
+logs are in `logs/original/`: `sweep-sym-k6.log` and `rerun-sym-k6.log`, the
+same sweep run twice. In its gadget output, `a<i>.<j>` is vertex `j` of
+auxiliary orbit `i`, and the palette anchors appear as `a2.0` (G_T), `a3.0`
+(G_F) and `a4.0` (G_B).
 
 ## Contact
 
