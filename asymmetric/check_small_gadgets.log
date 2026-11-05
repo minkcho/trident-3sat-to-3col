@@ -1,0 +1,20 @@
+k = 0: 0 candidate edges, 2^0 edge sets; 1 accept every satisfying input, 0 of them also reject (F,F,F): valid
+k = 1: 6 candidate edges, 2^6 edge sets; 38 accept every satisfying input, 0 of them also reject (F,F,F): valid
+k = 2: 13 candidate edges, 2^13 edge sets; 2,195 accept every satisfying input, 0 of them also reject (F,F,F): valid
+k = 3: 21 candidate edges, 2^21 edge sets; 200,331 accept every satisfying input, 0 of them also reject (F,F,F): valid
+k = 4: 30 candidate edges, 2^30 edge sets; 28,780,228 accept every satisfying input, 720 of them also reject (F,F,F): valid
+       30 up to relabeling the auxiliary vertices
+       5 classes up to relabeling the auxiliary vertices and the literals:
+         class 1: 9 edges, 6 gadgets up to relabeling the auxiliary vertices
+         class 2: 9 edges, 6 gadgets up to relabeling the auxiliary vertices
+         class 3: 9 edges, 6 gadgets up to relabeling the auxiliary vertices
+         class 4: 10 edges, 6 gadgets up to relabeling the auxiliary vertices
+         class 5: 10 edges, 6 gadgets up to relabeling the auxiliary vertices
+
+The gadgets of the figure (edges other than the palette triangle and x_i -- G_B):
+  (a) 10 edges, valid, class 5: a1-a2 a2-a3 a3-a4 x1-a1 G_T-a1 x1-a2 G_F-a2 x0-a3 x2-a4 G_T-a4
+  (b)  9 edges, valid, class 3: a1-a2 a2-a3 a3-a4 x1-a1 G_T-a1 x0-a2 G_F-a3 x2-a4 G_T-a4
+  (c) 10 edges, valid, class 4: a1-a2 a2-a3 a3-a4 x0-a1 x1-a1 G_T-a1 x0-a2 x1-a3 x2-a4 G_T-a4
+  (d)  9 edges, valid, class 2: a1-a2 a2-a3 a3-a4 x0-a1 G_T-a1 x0-a2 x1-a3 x2-a4 G_T-a4
+  (e)  9 edges, valid, class 1: a1-a2 a2-a3 a3-a4 x0-a1 G_T-a1 x1-a2 x0-a3 x2-a4 G_T-a4
+All five are valid and lie in different classes: the figure shows one gadget of every class.

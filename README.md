@@ -112,6 +112,13 @@ binom(k,2) + 4k switches for k fixed vertices; Table 1 (2^30, 2^40, 2^51,
 the Kleinberg-Tardos gadget and the OR-chain are valid, and the
 Sharma-Chaudhari gadget rejects (T,T,T).
 
+## Smaller asymmetric gadgets
+
+Without the symmetry, smaller valid gadgets exist: none has three or fewer
+auxiliary vertices, and those with four fall into five classes. The folder
+`asymmetric/` shows one gadget of each class and has a short program that
+checks this.
+
 ## Provenance
 
 The code was written by Claude (Anthropic) from the definitions in the paper
