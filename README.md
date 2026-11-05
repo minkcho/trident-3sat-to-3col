@@ -119,6 +119,12 @@ auxiliary vertices, and those with four fall into five classes. The folder
 `asymmetric/` shows one gadget of each class and has a short program that
 checks this.
 
+## Formal verification
+
+The folder `trident-symmetric-gadget-proof/` holds the formal verification in
+Lean 4 with Mathlib, completed by Claude (under evaluation by Human). Its
+README says where to start.
+
 ## Provenance
 
 The code was written by Claude (Anthropic) from the definitions in the paper
