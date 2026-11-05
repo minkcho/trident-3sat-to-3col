@@ -46,7 +46,7 @@ for the trident.
 |---|---|
 | palette triangle, x_i -- G_B | always present |
 | literal -- literal | never present (Definition 1) |
-| literal -- G_T, literal -- G_F | never present: such an edge rejects a satisfying input (note in the proof of Lemma 11) |
+| literal -- G_T, literal -- G_F | never present: such an edge rejects a satisfying input (remark after Definition 1) |
 | every pair with an auxiliary endpoint | free: binom(k,2) + 6k pairs |
 
 Pairs in the same S3-orbit are present or absent together, so a candidate is
