@@ -24,7 +24,7 @@ import atlas.SliceOrder
   pruned subtrees are those in which a satisfiable row is already dead
   (the problem's monotone `viable` bound) -- and, in the orderly raw walk
   (`--no-symmetry` without `--no-canonical`), the branches cut by the
-  relabeling check ([opus5.5 review] added).
+  relabeling check.
 
   Within each budget the slices run cheapest first (ascending free-switch
   count, `orderSlices`): the most aggregated -- most symmetric -- slices
@@ -109,7 +109,7 @@ def main (args : List String) : IO Unit := do
   let some (P, anchorNames) := args.head?.bind problemFor
     | throw (IO.userError usage)
   -- reject what would otherwise be ignored or silently defaulted
-  -- [opus5.5 review] switches must match exactly (`--require-layers` or
+  -- switches must match exactly (`--require-layers` or
   -- `--no-symmetry=1` passed the prefix test and were ignored), every
   -- `--sizes=` entry must parse, and a sharded run must name its shard
   for arg in args.drop 1 do

@@ -17,16 +17,15 @@ import atlas.Gadgets
   Contents: the two directions of the walk/`gadgetK` bridge in positive
   form (`found_gadgetK_threeColoring`, `gadgetK_mem_found_threeColoring`),
   re-runs of the symmetric sweeps for every slice with at most 3
-  auxiliary vertices (six in the kernel, [1, 1, 1] by `native_decide`;
-  [opus5.5 review] was "kernel re-runs"), the headline emptiness theorem
+  auxiliary vertices (six in the kernel, [1, 1, 1] by `native_decide`), the headline emptiness theorem
   (`no_small_symmetric_gadget_threeColoring` -- judged by the raw
   eight-row table, via P4), and the trident-slice uniqueness endpoint
   (`trident_unique_threeColoring`): the [3, 3] slice contains exactly
   the two tridents.
 
   Trust note: the bridge, the headline arguments, and six of the eight
-  slice re-runs (up to 2^12 candidates; [opus5.5 review] was "seven": the
-  seven k <= 3 slices plus the trident slice) are kernel `decide` -- standard
+  slice re-runs (up to 2^12 candidates; the
+  seven k <= 3 slices plus the trident slice make eight) are kernel `decide` -- standard
   axioms, no compiler. The two large re-runs -- `sym_empty_111` (2^17)
   and `trident_slice_found` (2^16) -- are `native_decide`: on sweeps
   beyond roughly 2^13 candidates the kernel evaluator's memory use is
@@ -126,7 +125,6 @@ theorem gadgetK_mem_found_threeColoring (parts : List Nat) (symmetry : Bool)
   exact List.mem_reverse.mpr hmem
 
 -- ---- the symmetric sweeps at k <= 3 (six in the kernel, [1,1,1] native)
--- [opus5.5 review] header was "inside the kernel"
 
 theorem sym_empty_nil : (searchSlice threeColoring [] true).2.found = [] := by
   decide +kernel
@@ -200,7 +198,6 @@ theorem no_small_symmetric_gadget_threeColoring :
     · exact absurd h List.not_mem_nil
 
 -- ---- the trident slice (native re-run; the two tridents' checks in the kernel)
--- [opus5.5 review] header was "inside the kernel"
 
 /-- First find of the [3, 3] sweep, in walk order: the trident with the
     literal layer on part 0 (lits -> layer 0 -> layer 1 triangle). -/

@@ -97,7 +97,6 @@ theorem walkGraph_perm_graphAt (base : List Edge) (free : List (List Edge))
   exact (walkGraph_perm_flatten free mask base).trans List.perm_append_comm
 
 -- ------------- the 3-coloring verifier is invariant under edge-list permutation
--- [opus5.5 review] header was "set-level"; the lemmas below are about `Perm`
 
 theorem colorableGo_perm {α : Type} [BEq α] {edges₁ edges₂ : List (α × α)}
     (h : edges₁.Perm edges₂) (pins : List (α × Nat)) :
@@ -132,8 +131,6 @@ theorem colorsOk_perm {α : Type} [BEq α] {i i' : Instance α}
   exact colorableGo_perm he _ _ _
 
 -- `commonK` sees rows only through isSat, measure and exact.
--- [opus5.5 review] the line above was the docstring of the generic lemma
--- below; it becomes a section note and the lemma gets its own docstring
 
 /-- `findSome?` agrees on `Forall₂`-related lists when `f` and `g` agree on
     related elements. -/
@@ -212,7 +209,7 @@ theorem commonK_ext (P : Problem) {α : Type} [BEq α]
     rw [h1, h2, h3 k]
 
 /-- `checkGadget` for 3-coloring is invariant under permutation of the
-    edge list ([opus5.5 review] was "only through its edge set"; the
+    edge list (the
     set-level form is `checkGadget_congr_3col`, ProofsCover). -/
 theorem checkGadget_perm_3col (U : Universe) (anchors : List Vertex)
     (rows : List (Bool × List Vertex × List Vertex)) {g g' : List Edge}

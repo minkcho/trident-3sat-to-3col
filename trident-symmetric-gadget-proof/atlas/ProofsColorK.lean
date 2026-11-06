@@ -1,8 +1,7 @@
 import atlas.Problems.KColoring
 /-!
   The palette-generic coloring kernel, reflected and shown antitone -- the
-  base of the coloring developments (P7-2a, made the base in the review
-  round of 2026-09-02).
+  base of the coloring developments.
 
   `colorableGoK k` is the backtracker with the palette `List.range k`;
   the 3-coloring kernel `colorableGo` is its k = 3 instance

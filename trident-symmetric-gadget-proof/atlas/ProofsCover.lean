@@ -18,7 +18,7 @@ import atlas.ProofsDecide
   literally for every invariant graph, not only for the enumerated
   list: `searchSlice_symmetric_covers_invariant`,
   `no_small_symmetric_gadget_threeColoring_invariant`,
-  `trident_unique_threeColoring_invariant`. (Review 2026-09-02, M6(c).)
+  `trident_unique_threeColoring_invariant`.
 -/
 
 namespace Atlas
@@ -186,8 +186,7 @@ theorem searchSlice_symmetric_covers_invariant (parts : List Nat)
     clause gadget with at most 3 auxiliary vertices, among the graphs inside
     the slice's edge list that contain the forced palette edges (judged by
     the raw eight-row table). Axioms: the standard three plus the
-    `native_decide` premise `sym_empty_111`. ([opus5.5 review] scope and
-    axioms stated.) -/
+    `native_decide` premise `sym_empty_111`. -/
 theorem no_small_symmetric_gadget_threeColoring_invariant :
     ∀ k, k ≤ 3 → ∀ parts ∈ compositions k [1, 2, 3, 6], ∀ g : List Edge,
       (∀ e ∈ g, e ∈ (threeColoring.attach parts).1.edges) →
@@ -208,8 +207,7 @@ theorem no_small_symmetric_gadget_threeColoring_invariant :
 /-- P5 uniqueness, for every invariant graph: an S3-invariant valid gadget
     of the trident slice (inside its edge list, containing the forced
     palette edges) has budget 1 and the edge set of a trident. Axioms: the
-    standard three plus the `native_decide` premise `trident_slice_found`.
-    ([opus5.5 review] scope and axioms stated.) -/
+    standard three plus the `native_decide` premise `trident_slice_found`. -/
 theorem trident_unique_threeColoring_invariant {g : List Edge}
     (hsub : ∀ e ∈ g, e ∈ (threeColoring.attach [3, 3]).1.edges)
     (hinv : ∀ s ∈ perms, ∀ e ∈ g,

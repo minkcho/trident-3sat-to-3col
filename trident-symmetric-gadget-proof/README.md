@@ -38,7 +38,7 @@ checking is that the statements say what the paper claims.
    | `atlas/Framework.lean` | 20–39, 50–142 | instances, the problem interface, the eight-row validity check `gadgetK` |
    | `atlas/Kits.lean` | 22–36 | the feasibility kit |
    | `atlas/Problems/ThreeColoring.lean` | 16–58 | the 3-coloring check and the palette |
-   | `atlas/ProofsDecide.lean` | 205–223 | the trident under its two labelings (`tridentA`, `tridentB`) |
+   | `atlas/ProofsDecide.lean` | 202–220 | the trident under its two labelings (`tridentA`, `tridentB`) |
 
 3. Run `lake exe cache get` and then `lake build`. The build checks every
    proof and prints the axioms of the four statements. The first build takes
@@ -196,13 +196,11 @@ warnings.
 
 Apart from `Statement.lean` and the three files added on 2026-11-04 for
 Theorem 16 (`ProofsTheorem16.lean`, `ProofsSmallOrbits.lean`,
-`ProofsSweeps16.lean`), the files come unchanged from the authors' larger
-framework, which is not public. Only the files needed here were kept, so
-some comments still refer to the larger framework:
+`ProofsSweeps16.lean`), the files come from the authors' larger framework,
+which is not public, with only comments edited. Only the files needed here
+were kept, so some comments still refer to the larger framework:
 - "the full line", "atlas-ext2", "P1" to "P8" and "round" refer to it and
   its development rounds.
-- Comments tagged `[opus5.5 review]` record documentation corrections from
-  a review pass on 2026-09-23.
 
 None of this affects the definitions or the proofs.
 
