@@ -1,0 +1,13 @@
+{
+  "title": "The Trident: A Minimum Symmetric Clause Gadget for 3SAT to 3-Coloring (code and logs)",
+  "description": "Enumeration program in Lean 4 and logs for the trident clause gadget. The repository also holds the logs of the authors' original enumeration program, the smallest asymmetric gadgets with a short program that checks them, and a formal verification in Lean 4, which is under evaluation by the authors.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    {"name": "Cho, Minkyoung", "affiliation": "Myongji University"},
+    {"name": "Kim, Hyunjun", "affiliation": "Myongji University"},
+    {"name": "Shin, Incheol", "affiliation": "Pukyong National University"}
+  ],
+  "keywords": ["3SAT", "graph coloring", "clause gadgets", "permutation symmetry", "Lean 4"]
+}
