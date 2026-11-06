@@ -12,7 +12,7 @@ import atlas.ProofsColorK
   `atlas/ProofsSym.lean` (`colorable_rename`). Soundness needs the graph
   to be loop-free (`hloop`), completeness does not.
 
-  Since the review round of 2026-09-02 the reflection is the k = 3
+  The reflection is the k = 3
   instance of the palette-generic one (ProofsColorK): `SpecExt` is
   `SpecExtK 3` up to unfolding (`SpecExt_iff_SpecExtK3`) and the two
   directions are read off `colorableGoK_sound/_complete` through the

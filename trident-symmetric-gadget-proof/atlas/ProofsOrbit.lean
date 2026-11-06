@@ -149,7 +149,7 @@ theorem edgeOrbit_length_dvd (L : LegalUniverse) (e : L.NEdge) :
 /-- The P4-4 headline: every switch the orbit generator can emit has one
     of the sizes `legalSizes` hard-codes -- every edge orbit of a legal
     universe has size 1, 2, 3 or 6, by orbit-stabilizer.
-    [opus5.5 review] was "are exactly": the statement is membership; that
+    The statement is membership; that
     every size occurs is not claimed. -/
 theorem edgeOrbit_length_legal {U : Universe} (hU : U.legal) {e : Edge}
     (he : e ∈ U.edges) :

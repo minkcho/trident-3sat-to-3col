@@ -8,7 +8,7 @@
   layers). The entries with core drop-ins are one-line wrappers over them
   (`find?_isSome_eq_any`, `pairwise_strengthen`, `countP_congr'`); the
   ones with core or mathlib drop-ins were removed in favour of the library
-  (`List.length_filterMap_eq_countP` -- core, [opus5.5 review] --,
+  (`List.length_filterMap_eq_countP` -- core --,
   `List.filterMap_eq_flatMap_toList`,
   `List.Sublist.flatMap_right`) at their users. `nodup_eraseDups` lives
   here so that the multi-clause layers need no group-theory import.

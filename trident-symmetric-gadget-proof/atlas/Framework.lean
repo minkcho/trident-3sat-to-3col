@@ -327,8 +327,8 @@ def negLitVertex (l : Nat × Bool) : MVertex := if l.2 then .neg l.1 else .pos l
     clause's literals in the shared layer, the negative layer onto the
     opposite polarity, attach-appended parts onto shared anchors, and
     everything else onto fresh clause-local vertices. -/
--- [opus5.5 review] a clause shorter than three literals wires its missing
--- ports to x0 through `getD` (open item M6, History.md); every theorem
+-- a clause shorter than three literals wires its missing
+-- ports to x0 through `getD`; every theorem
 -- assumes length-3 clauses. Left unchanged: the proof layer unfolds this.
 def mapVertex (P : Problem) (own c : Nat) (clause : ClauseSpec) : Vertex → MVertex
   | .lit i => litVertex (clause.getD i (0, true))
@@ -374,9 +374,9 @@ def multiK (P : Problem) (parts : List Nat) (g : List Edge)
 /-- Move one size-3 part of a composition to the declared negative-layer
     position (parts are labels, so one arrangement per composition covers
     the slice). -/
--- [opus5.5 review] latent: `List.insertIdx` past the end returns the list
+-- latent: `List.insertIdx` past the end returns the list
 -- unchanged, so for p ≥ 1 a composition with fewer than p + 1 parts loses
--- its size-3 part (open item M5b, History.md). Every registered problem
+-- its size-3 part. Every registered problem
 -- uses p = 0; left unchanged because the proof layer depends on it.
 def arrangeNeg (c : List Nat) (p : Nat) : List Nat :=
   (c.erase 3).insertIdx p 3

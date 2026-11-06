@@ -5,8 +5,8 @@ import atlas.Atlas
   Everything here deliberately shares no code with the generators it checks.
   `partitionCount` counts what `compositions` enumerates, by the same
   recursion (budget x allowed-suffix) counted rather than built -- so it
-  guards the list construction, not the recursion ([opus5.5 review]
-  corrected; `compositionsAux_length` proves the two agree); `allTuples` is
+  guards the list construction, not the recursion
+  (`compositionsAux_length` proves the two agree); `allTuples` is
   the ordered brute force whose sorted deduplication must equal
   `compositions`; `invariantUnder` is the definitional S3-invariance test
   whose filter over the raw walk must equal the symmetric generator. A

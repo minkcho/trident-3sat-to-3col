@@ -103,7 +103,7 @@ def multiTableTex (P : Problem) (parts : List Nat) (g : List Edge)
   let kText := match multiK P parts g clauses with
     | some k => s!"passed with $k = {k}$"
     | none => "failed"
-  -- [opus5.5 review] on a failed micro-universe (`none`) the columns below
+  -- on a failed micro-universe (`none`) the columns below
   -- are judged against k = 0, which fails every row and hides the row that
   -- actually broke (every independent-set and clique find). Left unchanged:
   -- the committed atlas/reports were generated this way and were reproduced
