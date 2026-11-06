@@ -55,7 +55,7 @@ auxiliary orbits has the K structural edge orbits printed beneath its panel
 in Fig. 5 and three palette attachments per auxiliary orbit: K + 3q switches,
 2^(K+3q) candidates. These are the numbers of the paper: 2^14 for the two
 size-3 orbits of the trident, binom(k,2) + 4k switches for k fixed vertices,
-and the totals of Table 1 (`--test` prints them).
+and the totals in the "all" rows of Table 1 (`--test` prints them).
 
 A candidate is *valid* if, with the anchors colored T, F, B, a proper
 3-coloring exists for exactly the satisfying inputs. For a symmetric
@@ -107,8 +107,9 @@ gadget, as Lemma 11 states. The three largest:
 | `[1, 1, 1, 1, 1, 1]` | 21 | 2^39 | 9,023,791,282 | 0 | 5 h 28 min |
 
 `lake exe sweep --test` (`logs/test.log`): binom(k,2) + 6k free pairs and
-binom(k,2) + 4k switches for k fixed vertices; Table 1 (2^30, 2^40, 2^51,
-2^63 unconstrained; about 2^22, 2^30, 2^39, 2^49 S3-symmetric); the trident,
+binom(k,2) + 4k switches for k fixed vertices; the unconstrained and
+S3-symmetric search-space sizes for N = 10 to 13 (the "all" rows of Table 1
+give them for N <= 12); the trident,
 the Kleinberg-Tardos gadget and the OR-chain are valid, and the
 Sharma-Chaudhari gadget rejects (T,T,T).
 
