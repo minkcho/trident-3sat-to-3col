@@ -134,10 +134,10 @@ Lean 4 with Mathlib, completed by Claude (under evaluation by Human). Its
 README says where to start.
 
 The folder `compact-proof-trident_minimum_unique/` holds the same proof cut
-down to the declarations its statements use, with three added statements that
-say what the engine functions in those statements mean. Its report
-(`report/proof-report.pdf`) explains the statements, the proof and the trusted
-base.
+down to the declarations its statements use. It also states Theorem 16 for
+the paper's Definition 1 in Mathlib terms and derives it from the search
+result by the paper's Lemma 6. Its report (`report/proof-report.pdf`) explains
+the statements, the proof and the trusted base.
 
 ## Provenance
 
