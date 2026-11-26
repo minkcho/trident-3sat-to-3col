@@ -5,8 +5,7 @@
 *The trident clause gadget for C = (x0 ∨ x1 ∨ x2) (Fig. 2(c) of the paper).
 Each branch vertex p_i is adjacent to its literal x_i, to G_T and to u_i, and
 u_0, u_1, u_2 form the upper triangle. The palette triangle G_T, G_F, G_B and
-the edges from G_B to the literals are shared by all clauses. Source:
-[`figures/trident.tex`](figures/trident.tex).*
+the edges from G_B to the literals are shared by all clauses.*
 
 The exhaustive enumeration behind Section IV-D of
 
