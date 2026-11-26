@@ -133,6 +133,12 @@ The folder `trident-symmetric-gadget-proof/` holds the formal verification in
 Lean 4 with Mathlib, completed by Claude (under evaluation by Human). Its
 README says where to start.
 
+The folder `compact-proof-trident_minimum_unique/` holds the same proof cut
+down to the declarations its statements use, with three added statements that
+say what the engine functions in those statements mean. Its report
+(`report/proof-report.pdf`) explains the statements, the proof and the trusted
+base.
+
 ## Provenance
 
 The code was written by Claude (Anthropic) from the definitions in the paper
