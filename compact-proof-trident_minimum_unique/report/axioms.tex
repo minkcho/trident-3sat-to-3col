@@ -1,27 +1,32 @@
 % Axioms printed by `lake build` (the #print axioms lines at the end of
-% atlas/Statement.lean), build of 2026-11-27 on Lean v4.33.0.
+% atlas/Theorem16.lean and atlas/Statement.lean), build of 2026-11-27 on
+% Lean v4.33.0.
 \medskip
-\noindent The build prints the axioms of each statement:
+\noindent The build prints the axioms of each result:
 
 \smallskip
 \begin{center}
 \begin{tabular}{@{}lll@{}}
 \toprule
-statement & standard axioms & compiled re-runs\\
+result & standard axioms & compiled re-runs\\
 \midrule
-1 (the trident is a candidate) & \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} & none\\
-2 (the trident is valid) & \lean{propext} & none\\
-3 (minimality) & all three & all seven\\
-4 (uniqueness) & all three & all seven\\
-5 (compositions) & \lean{propext}, \lean{Quot.sound} & none\\
-6 (the action) & all three & none\\
-7 (the judge) & all three & none\\
+\lean{minimum\_unique} (Theorem~16) & all three & all seven\\
+\lean{trident\_is\_valid\_gadget} & all three & none\\
+\midrule
+Statement 1 (the trident is a candidate) & all three & none\\
+Statement 2 (the trident is valid) & \lean{propext} & none\\
+Statement 3 (minimality) & all three & all seven\\
+Statement 4 (uniqueness) & all three & all seven\\
+Statement 5 (compositions) & \lean{propext}, \lean{Quot.sound} & none\\
+Statement 6 (the action) & all three & none\\
+Statement 7 (the judge) & all three & none\\
 \bottomrule
 \end{tabular}
 \end{center}
 \smallskip
-\noindent ``All seven'' are the auxiliary axioms
+\noindent ``All three'' are \lean{propext}, \lean{Classical.choice} and
+\lean{Quot.sound}. ``All seven'' are the auxiliary axioms
 \lean{Atlas.sym\_empty\_13.\_native.native\_decide.ax\_1\_1} and the
 corresponding axioms of \lean{sym\_empty\_23}, \lean{sym\_empty\_113},
 \lean{sym\_empty\_6}, \lean{sym\_empty\_123}, \lean{sym\_empty\_1113} and
-\lean{trident\_slice\_found}. No statement depends on \lean{sorryAx}.
+\lean{trident\_slice\_found}. No result depends on \lean{sorryAx}.

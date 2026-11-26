@@ -4,8 +4,17 @@
 \toprule
 file & lines & content\\
 \midrule
-\lean{Statement.lean} & 135 & the seven statements (start here)\\
-\lean{Meaning.lean} & 154 & proofs of Statements 5--7\\
+\lean{Definition1.lean} & 87 & Definition~1 and the trident graph (Section~\ref{sec:statement}; Mathlib only)\\
+\lean{Theorem16.lean} & 257 & \lean{minimum\_unique} and \lean{trident\_is\_valid\_gadget} (Section~\ref{sec:conclusion})\\
+\lean{TridentGadget.lean} & 135 & the trident is a valid gadget (Section~\ref{sec:tridentvalid}; Mathlib only)\\
+\lean{OrbitStructure.lean} & 173 & Lemma~6 (Section~\ref{sec:lemma6}; Mathlib only)\\
+\lean{OrbitLabels.lean} & 177 & permutations and the engine's tables, labels (Section~\ref{sec:labels})\\
+\lean{Candidate.lean} & 389 & the orbit composition and the vertex map of a gadget\\
+\lean{CandidateGraph.lean} & 156 & the edge list of a gadget is a symmetric candidate\\
+\lean{CandidateValid.lean} & 179 & validity is the verdict of the judge (Section~\ref{sec:valid})\\
+\midrule
+\lean{Statement.lean} & 137 & the seven statements about the candidate space\\
+\lean{Meaning.lean} & 155 & proofs of Statements 5--7\\
 \lean{Atlas.lean} & 174 & permutations, vertices, universes, the action, edges, orbits, compositions\\
 \lean{Framework.lean} & 197 & instances, the problem interface, the judge \lean{gadgetK}, the pruned search\\
 \lean{Kits.lean} & 37 & the feasibility kit\\
@@ -28,9 +37,10 @@ file & lines & content\\
 \lean{ProofsSweeps16.lean} & 42 & the six compiled empty sweeps\\
 \lean{ProofsTheorem16.lean} & 132 & \lean{trident\_minimum\_unique}\\
 \midrule
-total & 4874 & \\
+total & 6430 & \\
 \bottomrule
 \end{tabular}
 \end{center}
-Outside \lean{atlas/}: \lean{checks/ProofCone.lean} (the dependency check of
-Section~\ref{sec:checks}) and this report (\lean{report/}).
+The first eight files prove the results for Definition~1; the others are the
+candidate-space part. Outside \lean{atlas/}: \lean{checks/ProofCone.lean} (the
+dependency check of Section~\ref{sec:checks}) and this report (\lean{report/}).

@@ -19,8 +19,8 @@ import atlas.ProofsSweeps16
 
   The statement is about the formal candidate space: each orbit carries the
   standard action of its size, and orbits are listed in non-decreasing order
-  of size. That every S3-symmetric gadget of Definition 1 can be relabeled
-  into this form is the paper's Lemma 6, which is not formalized here.
+  of size. `Theorem16.lean` carries it over to every S3-symmetric gadget of
+  the paper's Definition 1, using Lemma 6 (`OrbitStructure.lean`).
 -/
 
 namespace Atlas
