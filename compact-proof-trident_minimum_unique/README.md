@@ -8,6 +8,11 @@ graphs and permutations
 ([`atlas/Definition1.lean`](atlas/Definition1.lean),
 [`atlas/Theorem16.lean`](atlas/Theorem16.lean)).
 
+A gadget of Definition 1 has six fixed vertices, the three literals (the
+input) and the palette triangle (the fixed colors), and auxiliary vertices.
+The result counts the auxiliary vertices added to these six. It is not
+about arbitrary graphs with at most twelve vertices.
+
 The proof has two layers. The paper's Lemma 6 (orbit structure) turns a
 gadget of Definition 1 into a candidate of a search engine. In the engine's
 candidate space the result follows from two proved reductions and an
@@ -28,20 +33,21 @@ Theorem 16 by the argument of its Section IV.
 You do not need to read the proofs, because Lean checks them. What needs
 checking is that the statements say what the paper claims.
 
-1. Read [`atlas/Definition1.lean`](atlas/Definition1.lean), 87 lines. It
+1. Read [`atlas/Definition1.lean`](atlas/Definition1.lean), 97 lines. It
    uses Mathlib only and no engine code. It defines an S3-symmetric clause
-   gadget (`Gadget`), its validity (`Gadget.Extends`, `Gadget.Valid`) and
-   the trident graph (`TV`, `tridentEdge`, `trident`).
+   gadget (`Gadget`), its auxiliary vertices (`Gadget.IsAux`), its validity
+   (`Gadget.Extends`, `Gadget.Valid`) and the trident graph (`TV`,
+   `tridentEdge`, `trident`).
 2. Read the two theorems at the end of
    [`atlas/Theorem16.lean`](atlas/Theorem16.lean):
    - `trident_is_valid_gadget`: the trident is a valid S3-symmetric clause
-     gadget with twelve vertices;
+     gadget with twelve vertices, the six fixed ones and six auxiliary ones;
    - `minimum_unique`: every valid S3-symmetric clause gadget on a finite
-     vertex set has at least twelve vertices (six auxiliary vertices), and
-     one with exactly twelve is isomorphic to the trident by an isomorphism
-     that fixes each literal and each anchor.
+     vertex set has at least six auxiliary vertices, added to its six fixed
+     vertices, and one with exactly six is isomorphic to the trident by an
+     isomorphism that fixes each literal and each anchor.
 
-   These two statements use only the six definitions of step 1.
+   These two statements use only the seven definitions of step 1.
 3. Run `lake exe cache get` and then `lake build`. The build checks every
    proof and prints the axioms of the two theorems and of the seven
    statements below. The first build takes about 8.5 hours, almost all of it
@@ -84,7 +90,8 @@ For the paper's Definition 1 (`atlas/Theorem16.lean`):
 
 - `trident_is_valid_gadget`: the trident graph, with its literals and
   anchors, carries an S3-symmetric clause gadget, this gadget is valid (the
-  paper's Theorem 4), and it has twelve vertices.
+  paper's Theorem 4), and it has twelve vertices: the six fixed ones and the
+  six auxiliary vertices p_i and u_i.
 - `minimum_unique`: Theorem 16, as described above.
 
 The paper's Lemma 6, in `atlas/OrbitStructure.lean` (Mathlib only):
@@ -103,8 +110,8 @@ For the engine's candidate space (`atlas/Statement.lean`):
 3. `no_valid_symmetric_gadget_below_12_vertices`: no valid S3-symmetric
    candidate has at most five auxiliary vertices (N ≤ 11).
 4. `valid_symmetric_gadget_up_to_12_vertices_is_trident`: every valid
-   S3-symmetric candidate with N ≤ 12 has composition `[3, 3]` and is the
-   trident, under one of its two labelings.
+   S3-symmetric candidate with at most six auxiliary vertices (N ≤ 12) has
+   composition `[3, 3]` and is the trident, under one of its two labelings.
 5. `compositions_are_all_orbit_compositions`: `compositions k [1, 2, 3, 6]`
    lists exactly the non-decreasing lists over {1, 2, 3, 6} that sum to `k`.
 6. `candidate_action_is_s3_action`: on every candidate, `act` is an action
@@ -179,7 +186,7 @@ unused.
 - Added: `atlas/Meaning.lean` and Statements 5–7. They connect the
   composition lemmas and the S3-action lemmas of `ProofsOrbit` to the
   statements, and state what `gadgetK` decides.
-- Added: the layer for Definition 1, eight files with 1,553 lines:
+- Added: the layer for Definition 1, eight files with 1,569 lines:
   `Definition1`, `Theorem16`, `TridentGadget`, `OrbitStructure`,
   `OrbitLabels`, `Candidate`, `CandidateGraph` and `CandidateValid`.
 - Unchanged: every remaining declaration and proof.

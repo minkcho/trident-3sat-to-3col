@@ -39,10 +39,11 @@ M.~Cho, H.~Kim, and I.~Shin}
 \noindent
 This note accompanies the Lean~4 package
 \lean{compact-proof-trident\_minimum\_unique}. The package proves Theorem~16
-of the paper for the paper's Definition~1: every valid $S_3$-symmetric clause
-gadget on a finite vertex set has at least six auxiliary vertices, and one
-with six is the trident. The statement uses only Mathlib's graphs and
-permutations (Section~\ref{sec:statement}). The proof has two layers. The
+of the paper for the paper's Definition~1. A gadget of Definition~1 has six
+fixed vertices, the three literals and the palette triangle, and auxiliary
+vertices. Every valid $S_3$-symmetric clause gadget has at least six
+auxiliary vertices, and one with six is the trident. The statement uses only
+Mathlib's graphs and permutations (Section~\ref{sec:statement}). The proof has two layers. The
 paper's Lemma~6 turns a gadget into a candidate of a search engine
 (Section~\ref{sec:def1}), and in the engine's candidate space the result
 follows from two proved reductions and an exhaustive search whose runs are
@@ -68,7 +69,9 @@ together with a group action $\rho:S_3\to\operatorname{Aut}(G)$ with
 $\rho(\sigma)(x_i)=x_{\sigma(i)}$ that fixes each anchor. The gadget is
 \emph{valid} if, with the anchors colored $\T,\F,\B$, a proper 3-coloring
 extending a literal coloring in $\{\T,\F\}^3$ exists exactly for the
-assignments that satisfy $C$.
+assignments that satisfy $C$. So every gadget contains six fixed vertices,
+the literals and the anchors, and Theorem~16 counts the auxiliary vertices
+added to them.
 
 \paragraph{Theorem~16 (paper).} Every valid $S_3$-symmetric clause gadget has
 at least six auxiliary vertices, and with six it is the trident, up to a graph
@@ -89,7 +92,7 @@ formalized.
 % ---------------------------------------------------------------------------
 \section{The statement in Lean}\label{sec:statement}
 
-\lean{atlas/Definition1.lean} (87 lines) states Definition~1 and the trident
+\lean{atlas/Definition1.lean} (97 lines) states Definition~1 and the trident
 with Mathlib's simple graphs and permutations. It does not import the search
 engine. The two theorems at the end of \lean{atlas/Theorem16.lean} use these
 definitions only, so what the package proves can be checked from this
@@ -127,9 +130,23 @@ $\{0,1,2\}$, to the automorphisms of the graph (\lean{G ≃g G}, with
 composition). It permutes the literals naturally (\lean{ρ\_lit}) and fixes
 each anchor (\lean{ρ\_anchor}).
 \end{itemize}
-Every other vertex is an auxiliary vertex. Nothing else is assumed. In
-particular an edge between a literal and $\GT$ or $\GF$ is allowed, as in
-Definition~1 itself; the paper excludes such edges afterwards by an argument.
+Every other vertex is an auxiliary vertex:
+\begin{code}
+def Gadget.IsAux (g : Gadget V) (v : V) : Prop :=
+  (∀ i, v ≠ g.lit i) ∧ v ≠ g.gT ∧ v ≠ g.gF ∧ v ≠ g.gB
+\end{code}
+Nothing else is assumed. In particular an edge between a literal and $\GT$
+or $\GF$ is allowed, as in Definition~1 itself; the paper excludes such edges
+afterwards by an argument.
+
+\paragraph{The six fixed vertices.} Every gadget contains the three
+literals, which carry the input, and the three anchors, whose colors are
+fixed. What varies from gadget to gadget is the set of auxiliary vertices,
+the edges other than the palette triangle and the edges from $\GB$ to the
+literals, and the action on the auxiliary vertices. The results below count
+the auxiliary vertices added to the six fixed ones. They say nothing about
+arbitrary graphs with at most twelve vertices: a graph without this frame,
+or with a symmetry that moves an anchor, is not a gadget of Definition~1.
 
 \begin{code}
 def Gadget.Extends (g : Gadget V) (α : Fin 3 → Bool) : Prop :=
@@ -181,22 +198,23 @@ theorem trident_is_valid_gadget :
       g.gF = TV.gF ∧ g.gB = TV.gB ∧ g.Valid) ∧ Fintype.card TV = 12
 
 theorem minimum_unique [Fintype V] (g : Gadget V) (hv : g.Valid) :
-    12 ≤ Fintype.card V ∧
-    (Fintype.card V = 12 → ∃ e : g.G ≃g trident,
+    6 ≤ Nat.card {v // g.IsAux v} ∧ 12 ≤ Fintype.card V ∧
+    (Nat.card {v // g.IsAux v} = 6 → ∃ e : g.G ≃g trident,
       (∀ i, e (g.lit i) = TV.x i) ∧
       e g.gT = TV.gT ∧ e g.gF = TV.gF ∧ e g.gB = TV.gB)
 \end{code}
 The first theorem says that the trident graph, with the literals $x_i$ and
 the three anchors, carries an action as in Definition~1 and is valid (the
-paper's Theorem~4), with twelve vertices. The second is Theorem~16. Let
-\lean{g} be a valid gadget on a finite vertex type \lean{V}. Since six of
-its vertices are the literals and the anchors, \lean{12 ≤ Fintype.card V}
-says that \lean{g} has at least six auxiliary vertices. If it has exactly
-six, there is a graph isomorphism \lean{e} from \lean{g.G} onto the trident
-that sends each literal to the corresponding literal and each anchor to the
-corresponding anchor.
+paper's Theorem~4). It has twelve vertices: the six fixed ones and the six
+auxiliary vertices $p_i$ and $u_i$. The second is Theorem~16. Let
+\lean{g} be a valid gadget on a finite vertex type \lean{V}, and let $k$ be
+the number of its auxiliary vertices, \lean{Nat.card \{v // g.IsAux v\}}.
+The theorem says that $k\ge6$ and that \lean{g} therefore has at least twelve
+vertices, the six fixed ones included. If $k=6$, there is a graph
+isomorphism \lean{e} from \lean{g.G} onto the trident that sends each literal
+to the corresponding literal and each anchor to the corresponding anchor.
 
-\paragraph{What a reader has to accept.} The six definitions above (57 lines
+\paragraph{What a reader has to accept.} The seven definitions above (61 lines
 of \lean{Definition1.lean}), Mathlib's notions of simple graph, permutation,
 group homomorphism and graph isomorphism, and the trusted base of
 Section~\ref{sec:trust}. The engine's definitions of Section~\ref{sec:model}
@@ -208,7 +226,11 @@ statements.
 
 The proof of \lean{minimum\_unique} passes through the candidate space of a
 search engine. This section describes that space and Section~\ref{sec:statements}
-the seven statements about it; they are intermediate results.
+the seven statements about it; they are intermediate results. As in
+Definition~1, every candidate contains the six fixed vertices with the
+palette triangle and the edges from $\GB$ to the literals. A candidate is
+determined by its auxiliary orbits and its other edges, and the search runs
+over these only.
 
 The engine's definitions are in four files of \lean{atlas/}:
 \lean{Atlas.lean}, \lean{Framework.lean}, \lean{Kits.lean} and
@@ -478,21 +500,21 @@ yields \lean{gadgetK\_of\_valid}: for a valid $g$,
 also uses that an input below 8 has a true literal exactly when it is not 0.
 
 \subsection{Conclusion}\label{sec:conclusion}
-(\lean{atlas/Theorem16.lean}.) The number of vertices of $g$ is the number
-$k$ of auxiliary vertices plus six (\lean{card\_eq}).
+(\lean{atlas/Theorem16.lean}.) Let $k$ be the number of auxiliary vertices
+of $g$. The number of all vertices is $k+6$ (\lean{card\_eq}).
 
-If $g$ had fewer than twelve vertices, then $k\le5$, and Statement~3 would
-say that the judge returns \lean{none} on the candidate of $g$, against
-\lean{gadgetK\_of\_valid}.
+If $k\le5$, Statement~3 would say that the judge returns \lean{none} on the
+candidate of $g$, against \lean{gadgetK\_of\_valid}. So $k\ge6$, and $g$ has
+at least twelve vertices.
 
-If $g$ has twelve vertices, then $k=6$, and Statement~4 says that
+If $k=6$, Statement~4 says that
 \lean{g.parts = [3, 3]} and that \lean{g.edgeList} has the edge set of
 \lean{tridentA} or of \lean{tridentB}. For each labeling an explicit map from
 the twelve vertices of the candidate space to \lean{TV} is injective and
 matches the edge list with the trident graph of Section~\ref{sec:statement}
 pair by pair (\lean{toTVA\_adj}, \lean{toTVB\_adj}; checked by evaluation).
-Composed with \lean{toVertex} it is a bijection from the vertices of $g$ to
-\lean{TV} that preserves adjacency in both directions and sends the literals
+Composed with \lean{toVertex} it is a bijection from the twelve vertices of
+$g$ to \lean{TV} that preserves adjacency in both directions and sends the literals
 and the anchors to their counterparts (\lean{iso\_of\_map}). In particular
 the two labelings are the same graph.
 

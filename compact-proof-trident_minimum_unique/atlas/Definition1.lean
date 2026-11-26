@@ -13,6 +13,11 @@ import Mathlib.Data.Fintype.Sum
   Mathlib's simple graphs and permutation groups. It does not import the
   search engine. `Theorem16.lean` states the results about these
   definitions.
+
+  Every gadget contains six fixed vertices: the three literals, which carry
+  the input, and the three anchors of the palette triangle, whose colors are
+  fixed. The results count the auxiliary vertices added to these six. They
+  are not about arbitrary graphs with a given number of vertices.
 -/
 
 namespace Def1
@@ -22,8 +27,9 @@ namespace Def1
     `lit 0`, `lit 1`, `lit 2`, a palette triangle `gT`, `gF`, `gB` with `gB`
     adjacent to every literal, and a group homomorphism `ρ` from S3 (the
     permutations of `Fin 3`) to the automorphisms of the graph that permutes
-    the literals naturally and fixes each anchor. Every other vertex is an
-    auxiliary vertex. -/
+    the literals naturally and fixes each anchor. These six vertices are
+    fixed in every gadget; every other vertex is an auxiliary vertex
+    (`Gadget.IsAux`). -/
 structure Gadget (V : Type) where
   G : SimpleGraph V
   lit : Fin 3 → V
@@ -40,6 +46,10 @@ structure Gadget (V : Type) where
   ρ_anchor : ∀ σ, ρ σ gT = gT ∧ ρ σ gF = gF ∧ ρ σ gB = gB
 
 variable {V : Type}
+
+/-- An auxiliary vertex: a vertex that is not a literal and not an anchor. -/
+def Gadget.IsAux (g : Gadget V) (v : V) : Prop :=
+  (∀ i, v ≠ g.lit i) ∧ v ≠ g.gT ∧ v ≠ g.gF ∧ v ≠ g.gB
 
 /-- The literal coloring `α` (`true` = T, `false` = F) extends to a proper
     3-coloring with the anchors colored T, F, B. Colors: 0 = T, 1 = F,
