@@ -2,12 +2,14 @@ import atlas.ProofsTheorem16
 import atlas.Meaning
 
 /-!
-  # What this project proves (start here)
+  # The statements about the candidate space
 
-  This file restates the results in one place. `lake build` checks every
-  statement below together with the proofs in the other files; a reviewer
-  does not need to read those proofs. The definitions the statements use are
-  listed in README.md, section "For reviewers".
+  This file restates, in one place, the results about the engine's candidate
+  space. `lake build` checks every statement below together with the proofs
+  in the other files; a reviewer does not need to read those proofs. The
+  definitions the statements use are listed in README.md, section "For
+  reviewers". `Theorem16.lean` derives from these statements the results for
+  the paper's Definition 1, which are stated without the engine.
 
   Notation.
   - `compositions k [1, 2, 3, 6]` lists the orbit compositions of `k`

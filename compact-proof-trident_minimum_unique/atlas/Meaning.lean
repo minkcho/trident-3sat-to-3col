@@ -27,9 +27,10 @@ import atlas.ProofsSym
      anchors T, F, B; the true literals T; the false literals F) and gives
      adjacent vertices different colors.
 
-  Not formalized: that every S3-symmetric gadget of Definition 1 can be
-  relabeled into a candidate of this space (the paper's Lemma 6, with the
-  standard classification of transitive S3-sets).
+  That every S3-symmetric gadget of the paper's Definition 1 can be
+  relabeled into a candidate of this space is proved in `Candidate.lean`
+  from Lemma 6 (`OrbitStructure.lean`). `Theorem16.lean` states the results
+  for Definition 1.
 -/
 
 namespace Atlas.Meaning
