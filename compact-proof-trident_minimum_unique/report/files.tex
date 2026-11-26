@@ -1,0 +1,36 @@
+% Files of atlas/ with line counts (2026-11-27).
+\begin{center}
+\small\begin{tabular}{@{}lrp{0.5\textwidth}@{}}
+\toprule
+file & lines & content\\
+\midrule
+\lean{Statement.lean} & 135 & the seven statements (start here)\\
+\lean{Meaning.lean} & 154 & proofs of Statements 5--7\\
+\lean{Atlas.lean} & 174 & permutations, vertices, universes, the action, edges, orbits, compositions\\
+\lean{Framework.lean} & 197 & instances, the problem interface, the judge \lean{gadgetK}, the pruned search\\
+\lean{Kits.lean} & 37 & the feasibility kit\\
+\lean{Problems/KColoring.lean} & 28 & the backtracking coloring kernel for $k$ colors\\
+\lean{Problems/ThreeColoring.lean} & 60 & 3-coloring as a problem: the test and the palette\\
+\lean{Proofs.lean} & 168 & the composition enumeration is sound and complete\\
+\lean{ProofsLib.lean} & 37 & list lemmas\\
+\lean{ProofsAction.lean} & 698 & the action laws, the edge algebra, the orbit generator\\
+\lean{ProofsOrbit.lean} & 168 & S3 as a Mathlib group, the \lean{MulAction}s, orbit sizes\\
+\lean{ProofsColorK.lean} & 323 & the $k$-coloring kernel: reflection and antitonicity\\
+\lean{ProofsColor.lean} & 166 & \lean{colorable\_iff\_spec} (Section~\ref{sec:color})\\
+\lean{ProofsPrune.lean} & 44 & pruning soundness\\
+\lean{ProofsKits.lean} & 56 & the mask enumeration \lean{bitSubset}\\
+\lean{ProofsWalk.lean} & 239 & the search walk and its completeness (Section~\ref{sec:search})\\
+\lean{ProofsWalkBridge.lean} & 271 & the walk enumerates the universe's graphs\\
+\lean{ProofsSym.lean} & 1123 & four inputs suffice (Section~\ref{sec:symred})\\
+\lean{ProofsSmallOrbits.lean} & 257 & orbits of sizes 1 and 2 (Section~\ref{sec:small})\\
+\lean{ProofsCover.lean} & 205 & every symmetric candidate is enumerated (Section~\ref{sec:cover})\\
+\lean{ProofsDecide.lean} & 160 & \lean{sym\_empty\_3}, the trident slice, \lean{tridentA}, \lean{tridentB}\\
+\lean{ProofsSweeps16.lean} & 42 & the six compiled empty sweeps\\
+\lean{ProofsTheorem16.lean} & 132 & \lean{trident\_minimum\_unique}\\
+\midrule
+total & 4874 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+Outside \lean{atlas/}: \lean{checks/ProofCone.lean} (the dependency check of
+Section~\ref{sec:checks}) and this report (\lean{report/}).
