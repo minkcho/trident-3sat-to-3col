@@ -11,9 +11,10 @@ import atlas.TridentGadget
   * `trident_is_valid_gadget`: the trident, with its literals and anchors,
     is a valid S3-symmetric clause gadget with twelve vertices.
   * `minimum_unique`: every valid S3-symmetric clause gadget on a finite
-    vertex set has at least twelve vertices (six auxiliary vertices), and
-    one with exactly twelve is isomorphic to the trident by an isomorphism
-    that fixes each literal and each anchor.
+    vertex set has at least six auxiliary vertices, added to its six fixed
+    vertices (the literals and the anchors), and one with exactly six is
+    isomorphic to the trident by an isomorphism that fixes each literal and
+    each anchor.
 
   Proof of `minimum_unique`. Lemma 6 (`OrbitStructure.lean`) turns the
   gadget into a symmetric candidate of the search engine (`Candidate.lean`,
@@ -23,6 +24,11 @@ import atlas.TridentGadget
   vertices passes and that one with six is the trident under one of its two
   labelings. Both labelings are isomorphic to the trident graph of
   `Definition1.lean` (checked edge by edge below).
+
+  The results are about gadgets on the six fixed vertices of Definition 1
+  (three literals and the palette triangle) and count the auxiliary vertices
+  added to them. They are not about arbitrary graphs with at most twelve
+  vertices.
 -/
 
 namespace Def1
@@ -209,38 +215,42 @@ end Gadget
 -- ------------------------------------------------------------- the theorem
 
 /-- Theorem 16 of the paper (minimum size and uniqueness), for Definition 1.
-    Let `g` be a valid S3-symmetric clause gadget on a finite vertex set.
-    Then `g` has at least twelve vertices, that is, at least six auxiliary
-    vertices. If it has exactly twelve, it is the trident: there is a graph
-    isomorphism onto the trident that sends each literal to the
-    corresponding literal and each anchor to the corresponding anchor. -/
+    Let `g` be a valid S3-symmetric clause gadget on a finite vertex set:
+    its six fixed vertices are the three literals and the three anchors, and
+    its other vertices are auxiliary. Then `g` has at least six auxiliary
+    vertices, and so at least twelve vertices in total. If it has exactly
+    six auxiliary vertices, it is the trident: there is a graph isomorphism
+    onto the trident that sends each literal to the corresponding literal
+    and each anchor to the corresponding anchor. -/
 theorem minimum_unique [Fintype V] (g : Gadget V) (hv : g.Valid) :
-    12 ≤ Fintype.card V ∧
-    (Fintype.card V = 12 → ∃ e : g.G ≃g trident,
+    6 ≤ Nat.card {v // g.IsAux v} ∧ 12 ≤ Fintype.card V ∧
+    (Nat.card {v // g.IsAux v} = 6 → ∃ e : g.G ≃g trident,
       (∀ i, e (g.lit i) = TV.x i) ∧ e g.gT = TV.gT ∧ e g.gF = TV.gF ∧ e g.gB = TV.gB) := by
-  have hcard : Fintype.card V = Nat.card g.Aux + 6 := by
+  have hcard : Fintype.card V = Nat.card {v // g.IsAux v} + 6 := by
     rw [← Nat.card_eq_fintype_card]
     exact g.card_eq
   have hK := g.gadgetK_of_valid hv
-  have hmem := g.parts_mem_compositions
+  have hmem : g.parts ∈ compositions (Nat.card {v // g.IsAux v}) [1, 2, 3, 6] :=
+    g.parts_mem_compositions
   have hsym := g.symCandidate
-  constructor
-  · -- fewer than six auxiliary vertices: Statement 3
+  -- at least six auxiliary vertices: Statement 3
+  have hsix : 6 ≤ Nat.card {v // g.IsAux v} := by
     by_contra hlt
-    have hk : Nat.card g.Aux ≤ 5 := by omega
+    have hk : Nat.card {v // g.IsAux v} ≤ 5 := by omega
     have hnone := Statement.no_valid_symmetric_gadget_below_12_vertices _ hk _ hmem _ hsym
     rw [hnone] at hK
     cases hK
-  · -- exactly six auxiliary vertices: Statement 4
-    intro h12
-    have hk : Nat.card g.Aux ≤ 6 := by omega
-    obtain ⟨hparts, -, hedges⟩ :=
-      Statement.valid_symmetric_gadget_up_to_12_vertices_is_trident _ hk _ hmem _ hsym 1 hK
-    rcases hedges with hA | hB
-    · exact g.iso_of_map h12 hparts tridentA hA toTVA toTVA_inj toTVA_adj
-        (fun i => congrArg TV.x (idx_val i)) rfl rfl rfl
-    · exact g.iso_of_map h12 hparts tridentB hB toTVB toTVB_inj toTVB_adj
-        (fun i => congrArg TV.x (idx_val i)) rfl rfl rfl
+  refine ⟨hsix, by omega, fun h6 => ?_⟩
+  -- exactly six auxiliary vertices: Statement 4
+  have h12 : Fintype.card V = 12 := by omega
+  obtain ⟨hparts, -, hedges⟩ :=
+    Statement.valid_symmetric_gadget_up_to_12_vertices_is_trident _ (le_of_eq h6) _ hmem _
+      hsym 1 hK
+  rcases hedges with hA | hB
+  · exact g.iso_of_map h12 hparts tridentA hA toTVA toTVA_inj toTVA_adj
+      (fun i => congrArg TV.x (idx_val i)) rfl rfl rfl
+  · exact g.iso_of_map h12 hparts tridentB hB toTVB toTVB_inj toTVB_adj
+      (fun i => congrArg TV.x (idx_val i)) rfl rfl rfl
 
 /-- The trident attains the minimum: the trident graph, with the literals
     `TV.x i` and the anchors `TV.gT`, `TV.gF`, `TV.gB`, carries an

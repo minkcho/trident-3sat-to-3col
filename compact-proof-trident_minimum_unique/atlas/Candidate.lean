@@ -31,11 +31,7 @@ variable (g : Gadget V)
 
 -- --------------------------------------------- the action on the auxiliaries
 
-/-- An auxiliary vertex: not a literal and not an anchor. -/
-def IsAux (v : V) : Prop :=
-  (∀ i, v ≠ g.lit i) ∧ v ≠ g.gT ∧ v ≠ g.gF ∧ v ≠ g.gB
-
-/-- The auxiliary vertices. -/
+/-- The auxiliary vertices (`Gadget.IsAux`, `Definition1.lean`). -/
 abbrev Aux : Type := {v : V // g.IsAux v}
 
 theorem gT_ne_gF : g.gT ≠ g.gF := g.palette.1.ne
