@@ -25,8 +25,8 @@ import atlas.ProofsSweeps16
 
 namespace Atlas
 
-/-- Theorem 16 in the formal model (minimality and uniqueness up to twelve
-    vertices). -/
+/-- Theorem 16 in the formal model (minimality and uniqueness up to six
+    auxiliary vertices). -/
 theorem trident_minimum_unique :
     ∀ k, k ≤ 6 → ∀ parts ∈ compositions k [1, 2, 3, 6], ∀ g : List Edge,
       (∀ e ∈ g, e ∈ (threeColoring.attach parts).1.edges) →

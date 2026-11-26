@@ -53,7 +53,7 @@ theorem trident_is_valid : gadgetK threeColoring [3, 3] tridentA false = some 1 
 
 /-- 3. Minimality: no S3-symmetric candidate with at most five auxiliary
     vertices (N ≤ 11) is a valid clause gadget. -/
-theorem no_valid_symmetric_gadget_below_12_vertices :
+theorem no_valid_symmetric_gadget_below_six_auxiliary_vertices :
     ∀ k, k ≤ 5 → ∀ parts ∈ compositions k [1, 2, 3, 6], ∀ g : List Edge,
       SymCandidate parts g → gadgetK threeColoring parts g false = none :=
   fun k hk parts hparts g ⟨hsub, hinv, hforced⟩ =>
@@ -62,7 +62,7 @@ theorem no_valid_symmetric_gadget_below_12_vertices :
 /-- 4. Uniqueness: every valid S3-symmetric candidate with at most six
     auxiliary vertices (N ≤ 12) has composition `[3, 3]`, budget 1, and the
     edge set of the trident under one of its two labelings. -/
-theorem valid_symmetric_gadget_up_to_12_vertices_is_trident :
+theorem valid_symmetric_gadget_up_to_six_auxiliary_vertices_is_trident :
     ∀ k, k ≤ 6 → ∀ parts ∈ compositions k [1, 2, 3, 6], ∀ g : List Edge,
       SymCandidate parts g →
       ∀ b, gadgetK threeColoring parts g false = some b →
@@ -130,8 +130,8 @@ end Atlas.Statement
 -- The axioms each statement rests on. `lake build` prints them.
 #print axioms Atlas.Statement.trident_is_symmetric_candidate
 #print axioms Atlas.Statement.trident_is_valid
-#print axioms Atlas.Statement.no_valid_symmetric_gadget_below_12_vertices
-#print axioms Atlas.Statement.valid_symmetric_gadget_up_to_12_vertices_is_trident
+#print axioms Atlas.Statement.no_valid_symmetric_gadget_below_six_auxiliary_vertices
+#print axioms Atlas.Statement.valid_symmetric_gadget_up_to_six_auxiliary_vertices_is_trident
 #print axioms Atlas.Statement.compositions_are_all_orbit_compositions
 #print axioms Atlas.Statement.candidate_action_is_s3_action
 #print axioms Atlas.Statement.gadgetK_is_validity

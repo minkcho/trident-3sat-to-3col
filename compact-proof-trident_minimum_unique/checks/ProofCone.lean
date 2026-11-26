@@ -85,8 +85,8 @@ run_cmd do
       ``Def1.trident_is_valid_gadget,
       ``Atlas.Statement.trident_is_symmetric_candidate,
       ``Atlas.Statement.trident_is_valid,
-      ``Atlas.Statement.no_valid_symmetric_gadget_below_12_vertices,
-      ``Atlas.Statement.valid_symmetric_gadget_up_to_12_vertices_is_trident,
+      ``Atlas.Statement.no_valid_symmetric_gadget_below_six_auxiliary_vertices,
+      ``Atlas.Statement.valid_symmetric_gadget_up_to_six_auxiliary_vertices_is_trident,
       ``Atlas.Statement.compositions_are_all_orbit_compositions,
       ``Atlas.Statement.candidate_action_is_s3_action,
       ``Atlas.Statement.gadgetK_is_validity]

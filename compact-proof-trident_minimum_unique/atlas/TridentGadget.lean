@@ -2,6 +2,7 @@ import atlas.Definition1
 import Mathlib.Data.Fintype.Perm
 import Mathlib.Data.Fin.VecNotation
 import Mathlib.Tactic.FinCases
+import Mathlib.SetTheory.Cardinal.Finite
 
 /-!
   The trident is a valid S3-symmetric clause gadget in the sense of
@@ -131,5 +132,14 @@ theorem tridentGadget_valid : tridentGadget.Valid := by
     exact tridentColoring_proper (α 0) (α 1) (α 2) i0 (by rw [← hα]; exact hi0) u v huv
 
 theorem card_TV : Fintype.card TV = 12 := by decide
+
+instance : DecidablePred tridentGadget.IsAux := fun v => by
+  unfold Gadget.IsAux
+  infer_instance
+
+/-- The trident has six auxiliary vertices: the `p i` and the `u i`. -/
+theorem tridentGadget_card_aux : Nat.card {v // tridentGadget.IsAux v} = 6 := by
+  rw [Nat.card_eq_fintype_card]
+  decide
 
 end Def1

@@ -195,7 +195,8 @@ $p_i\GT$, $u_iu_j$ ($i\ne j$), $x_i\GB$ and the palette triangle
 \begin{code}
 theorem trident_is_valid_gadget :
     (∃ g : Gadget TV, g.G = trident ∧ g.lit = TV.x ∧ g.gT = TV.gT ∧
-      g.gF = TV.gF ∧ g.gB = TV.gB ∧ g.Valid) ∧ Fintype.card TV = 12
+      g.gF = TV.gF ∧ g.gB = TV.gB ∧ g.Valid ∧
+      Nat.card {v // g.IsAux v} = 6) ∧ Fintype.card TV = 12
 
 theorem minimum_unique [Fintype V] (g : Gadget V) (hv : g.Valid) :
     6 ≤ Nat.card {v // g.IsAux v} ∧ 12 ≤ Fintype.card V ∧
@@ -205,8 +206,8 @@ theorem minimum_unique [Fintype V] (g : Gadget V) (hv : g.Valid) :
 \end{code}
 The first theorem says that the trident graph, with the literals $x_i$ and
 the three anchors, carries an action as in Definition~1 and is valid (the
-paper's Theorem~4). It has twelve vertices: the six fixed ones and the six
-auxiliary vertices $p_i$ and $u_i$. The second is Theorem~16. Let
+paper's Theorem~4). It has six auxiliary vertices, the $p_i$ and the $u_i$,
+and so twelve vertices in total. The second is Theorem~16. Let
 \lean{g} be a valid gadget on a finite vertex type \lean{V}, and let $k$ be
 the number of its auxiliary vertices, \lean{Nat.card \{v // g.IsAux v\}}.
 The theorem says that $k\ge6$ and that \lean{g} therefore has at least twelve
@@ -353,10 +354,10 @@ two parts exchanged.
 \begin{enumerate}
 \item \lean{trident\_is\_symmetric\_candidate}: \lean{SymCandidate [3, 3] tridentA}.
 \item \lean{trident\_is\_valid}: \lean{gadgetK threeColoring [3, 3] tridentA false = some 1}.
-\item \lean{no\_valid\_symmetric\_gadget\_below\_12\_vertices}: for every
+\item \lean{no\_valid\_symmetric\_gadget\_below\_six\_auxiliary\_vertices}: for every
 $k\le5$, every composition of $k$ and every symmetric candidate \lean{g},
 \lean{gadgetK threeColoring parts g false = none}.
-\item \lean{valid\_symmetric\_gadget\_up\_to\_12\_vertices\_is\_trident}: for
+\item \lean{valid\_symmetric\_gadget\_up\_to\_six\_auxiliary\_vertices\_is\_trident}: for
 every $k\le6$, composition and symmetric candidate \lean{g}, if
 \lean{gadgetK} returns \lean{some b}, then \lean{parts = [3, 3]}, $b=1$, and
 \lean{g} has the edge set of \lean{tridentA} or of \lean{tridentB}.
@@ -522,7 +523,9 @@ the two labelings are the same graph.
 (\lean{atlas/TridentGadget.lean}; Mathlib only.) A permutation acts on
 \lean{TV} by permuting the indices of $x_i$, $p_i$ and $u_i$. This preserves
 \lean{tridentEdge}, so it gives the action $\rho$ of Definition~1
-(\lean{tridentGadget}). Validity is the paper's Theorem~4. If all literals
+(\lean{tridentGadget}). The auxiliary vertices are the six vertices $p_i$
+and $u_i$ (\lean{tridentGadget\_card\_aux}). Validity is the paper's
+Theorem~4. If all literals
 are false, each $p_i$ is adjacent to $x_i$, which has color $\F$, and to
 $\GT$, so $p_i$ has color $\B$; then no $u_i$ has color $\B$, and the
 triangle $u_0u_1u_2$ cannot be colored with two colors. If literal $i_0$ is
@@ -719,8 +722,8 @@ is not 0 (\lean{envInput\_some\_true}).
 \item The trident: the edge lists \lean{tridentA} and \lean{tridentB} are the
 trident graph (\lean{toTVA\_inj}, \lean{toTVA\_adj}, \lean{toTVB\_inj},
 \lean{toTVB\_adj}), the colorings of Section~\ref{sec:tridentvalid} are proper
-(\lean{tridentColoring\_proper}), and \lean{TV} has twelve elements
-(\lean{card\_TV}).
+(\lean{tridentColoring\_proper}), and \lean{TV} has twelve elements, six of
+them auxiliary (\lean{card\_TV}, \lean{tridentGadget\_card\_aux}).
 \item Four facts about three points or three colors inside
 \lean{exists\_fixed\_of\_sq\_eq\_one} and \lean{tridentGadget\_valid}, for
 example that three distinct elements of a three-element set are all of its

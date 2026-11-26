@@ -9,7 +9,7 @@ import atlas.TridentGadget
   engine definitions).
 
   * `trident_is_valid_gadget`: the trident, with its literals and anchors,
-    is a valid S3-symmetric clause gadget with twelve vertices.
+    is a valid S3-symmetric clause gadget with six auxiliary vertices.
   * `minimum_unique`: every valid S3-symmetric clause gadget on a finite
     vertex set has at least six auxiliary vertices, added to its six fixed
     vertices (the literals and the anchors), and one with exactly six is
@@ -237,15 +237,16 @@ theorem minimum_unique [Fintype V] (g : Gadget V) (hv : g.Valid) :
   have hsix : 6 ≤ Nat.card {v // g.IsAux v} := by
     by_contra hlt
     have hk : Nat.card {v // g.IsAux v} ≤ 5 := by omega
-    have hnone := Statement.no_valid_symmetric_gadget_below_12_vertices _ hk _ hmem _ hsym
+    have hnone :=
+      Statement.no_valid_symmetric_gadget_below_six_auxiliary_vertices _ hk _ hmem _ hsym
     rw [hnone] at hK
     cases hK
   refine ⟨hsix, by omega, fun h6 => ?_⟩
   -- exactly six auxiliary vertices: Statement 4
   have h12 : Fintype.card V = 12 := by omega
   obtain ⟨hparts, -, hedges⟩ :=
-    Statement.valid_symmetric_gadget_up_to_12_vertices_is_trident _ (le_of_eq h6) _ hmem _
-      hsym 1 hK
+    Statement.valid_symmetric_gadget_up_to_six_auxiliary_vertices_is_trident _ (le_of_eq h6) _
+      hmem _ hsym 1 hK
   rcases hedges with hA | hB
   · exact g.iso_of_map h12 hparts tridentA hA toTVA toTVA_inj toTVA_adj
       (fun i => congrArg TV.x (idx_val i)) rfl rfl rfl
@@ -255,11 +256,13 @@ theorem minimum_unique [Fintype V] (g : Gadget V) (hv : g.Valid) :
 /-- The trident attains the minimum: the trident graph, with the literals
     `TV.x i` and the anchors `TV.gT`, `TV.gF`, `TV.gB`, carries an
     S3-symmetric clause gadget in the sense of Definition 1, this gadget is
-    valid, and it has twelve vertices. -/
+    valid, and it has six auxiliary vertices (the `TV.p i` and the
+    `TV.u i`), twelve vertices in total. -/
 theorem trident_is_valid_gadget :
     (∃ g : Gadget TV, g.G = trident ∧ g.lit = TV.x ∧ g.gT = TV.gT ∧ g.gF = TV.gF ∧
-      g.gB = TV.gB ∧ g.Valid) ∧ Fintype.card TV = 12 :=
-  ⟨⟨tridentGadget, rfl, rfl, rfl, rfl, rfl, tridentGadget_valid⟩, card_TV⟩
+      g.gB = TV.gB ∧ g.Valid ∧ Nat.card {v // g.IsAux v} = 6) ∧ Fintype.card TV = 12 :=
+  ⟨⟨tridentGadget, rfl, rfl, rfl, rfl, rfl, tridentGadget_valid, tridentGadget_card_aux⟩,
+    card_TV⟩
 
 end Def1
 
