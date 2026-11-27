@@ -151,7 +151,8 @@ colorings of the trident. The report lists them.
 - The paper's own proof of Theorem 16 (the lemma chain of its Sections IV-B
   and IV-C). The formal proof reaches the statement by the exhaustive search
   in the candidate space. From Section IV it formalizes the orbit types of
-  Lemma 6, a special case of Lemma 11 and the four-input reduction.
+  Lemma 6, a special case of Lemma 11 and the four-input reduction. The
+  package `../own-proof-trident_minimum_unique/` formalizes the lemma chain.
 - The statements of Lemma 6 about the subgraph induced on an orbit of size 3
   and about literal attachments. The proof does not need them.
 - The paper's remark after Theorem 16 that the isomorphism onto the trident

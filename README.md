@@ -129,6 +129,14 @@ checks this.
 
 ## Formal verification
 
+The folder `own-proof-trident_minimum_unique/` holds a formal proof of
+Theorem 16 in Lean 4 with Mathlib that follows the paper's own argument, the
+lemma chain of Section IV, without a search (completed by Claude, under
+evaluation by Human). It depends on Lean's standard axioms only and builds
+in less than a minute once Mathlib is in place. Its report
+(`report/proof-report.pdf`) gives the Lean statement of each lemma next to
+the paper's.
+
 The folder `trident-symmetric-gadget-proof/` holds the formal verification in
 Lean 4 with Mathlib, completed by Claude (under evaluation by Human). Its
 README says where to start.
