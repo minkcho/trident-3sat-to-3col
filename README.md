@@ -136,14 +136,23 @@ evaluation by Human). It also contains the search engine of
 `trident-symmetric-gadget-proof/` and ties it to this proof: the candidate
 space of the engine is exactly the set of gadgets of Definition 1 on finite
 vertex sets, the search finds every valid candidate, and what the search
-returns follows from Theorem 16. No statement in it uses a run of the search or
-compiled code. It depends on Lean's standard axioms only and builds in less
-than a minute once Mathlib is in place. Its report
+returns follows from Theorem 16. No statement in it uses a run of the search
+or compiled code. It depends on Lean's standard axioms only and builds in
+less than a minute once Mathlib is in place. Its report
 (`report/proof-report.pdf`) gives the Lean statements next to the paper's.
 
 The folder `trident-symmetric-gadget-proof/` holds the formal verification in
 Lean 4 with Mathlib, completed by Claude (under evaluation by Human). Its
 README says where to start.
+
+The folder `trident-symmetric-gadget-proof2/` is the second version of
+`trident-symmetric-gadget-proof/` (completed by Claude, under evaluation by
+Human). It states Theorem 16 for Definition 1 and proves it through the
+exhaustive search of the first version: the step from Definition 1 to the
+candidates of the search is formalized, and the package keeps only the
+declarations that its statements use. Part of the search is run at build
+time by compiled code, so the first build takes about 8 hours 20 minutes.
+Its README lists the differences from the first version.
 
 ## Provenance
 
