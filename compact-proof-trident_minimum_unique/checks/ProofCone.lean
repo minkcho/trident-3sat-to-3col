@@ -8,7 +8,7 @@ import atlas.Theorem16
   bodies and proofs from the roots (core Lean and Mathlib are library and are
   not followed) and prints every declaration of the package that is never
   reached. Auxiliary constants
-  (`match_`, `proof_`, `eq_`, private names) count as the declaration that
+  (`match_1`, `proof_1`, `eq_1`, private names) count as the declaration that
   owns them, and the declarations Lean generates for structures, inductive
   types and `deriving` clauses are listed separately.
 
@@ -19,9 +19,20 @@ open Lean Elab Command
 
 namespace ProofCone
 
+/-- `pre` followed by numbers, such as `match_1`, `match_1_1` or `eq_2` -/
+def numbered (pre s : String) : Bool :=
+  s.startsWith pre &&
+    match s.toList.drop pre.length with
+    | [] => false
+    | c :: cs => c.isDigit && cs.all fun d => d.isDigit || d == '_'
+
+/-- A name component that Lean gives to an auxiliary constant. A lemma
+    written in the source with a name such as `eq_lit_of_toVertex` is not
+    one. -/
 def internalComp (s : String) : Bool :=
-  s.startsWith "_" || s.startsWith "match_" || s.startsWith "proof_" ||
-  s.startsWith "eq_" || s == "eq_def" || s.startsWith "spec_" || s.startsWith "fun_"
+  s.startsWith "_" || numbered "match_" s || numbered "proof_" s ||
+  numbered "eq_" s || numbered "spec_" s || s == "eq_def" || s == "eq_unfold" ||
+  s.startsWith "fun_cases"
 
 /-- the user-facing declaration that owns a (possibly auxiliary) constant -/
 def owner (n : Name) : Name :=
