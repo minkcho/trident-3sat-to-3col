@@ -17,9 +17,9 @@
   subsets. Turning symmetry off means each raw edge becomes its own switch --
   same universe, same walk, exponentially more of it.
 
-  The per-composition switch counts reproduce, composition by composition, the
-  "S3 orbit space" column of the search-space table in the trident paper
-  (sum over the compositions of k of 2^K).
+  A composition with K switches has 2^K candidates. For 3-coloring this is
+  four times the number in the paper's Table 1: the engine also switches the
+  literal--G_T and the literal--G_F orbit, which the paper leaves out.
 -/
 
 namespace Atlas

@@ -42,10 +42,10 @@ first proves Theorem~16 of the paper for the paper's Definition~1 by the
 argument of the paper's Section~IV: every valid $S_3$-symmetric clause gadget
 has at least six auxiliary vertices, and one with six is the trident. Each
 numbered statement of Sections~IV-A to IV-C is stated and proved in Lean.
-The second part holds the search of Section~IV-D and ties it to the first:
-the candidate space of the search is exactly the set of gadgets of
-Definition~1, the search procedure visits every candidate and reports only
-valid ones, and what the search returns follows from Theorem~16. No statement
+The second part holds an exhaustive search for valid gadgets and ties it to
+the first: the candidate space of the search is exactly the set of gadgets of
+Definition~1, the search procedure finds every valid candidate and reports
+only valid ones, and what the search returns follows from Theorem~16. No statement
 uses a run of the search or compiled code: every result depends on Lean's
 three standard axioms only, and the package builds in less than a minute
 once Mathlib is in place. The note gives the Lean statements, describes how
@@ -82,12 +82,13 @@ gadget (\lean{Def1.trident\_is\_valid\_gadget}).
 
 \paragraph{Two parts.} Part~1 (\lean{proof/},
 Sections~\ref{sec:statement}--\ref{sec:thm16}) is the paper's proof. Part~2
-(\lean{search/}, Section~\ref{sec:search}) is about the exhaustive search of
-the paper's Section~IV-D. The other Lean package of the repository,
+(\lean{search/}, Section~\ref{sec:search}) is about an exhaustive search for
+valid gadgets. The other Lean package of the repository,
 \lean{trident-symmetric-gadget-proof}, proves its results by running this
 search at build time with compiled code. Here the search is not run:
 Theorem~16 is proved first, and the statements about the search are derived
-from it.
+from it. The search is not the enumeration program of the paper's
+Section~IV-D; Section~\ref{sec:remarks} states the difference.
 
 % ---------------------------------------------------------------------------
 \section{The statement in Lean}\label{sec:statement}
@@ -705,7 +706,8 @@ Section~\ref{sec:conventions}. A valid gadget with exactly six is minimum
 itself, and \lean{minimum\_is\_trident} applies to it. This is the remark at
 the beginning of the paper's proof.
 
-\paragraph{The trident.} \lean{trident\_is\_valid\_gadget} is proved in
+\paragraph{The trident.} \lean{trident\_is\_valid\_gadget} rests on
+\lean{tridentGadget\_valid} and \lean{tridentGadget\_card\_aux} in
 \lean{proof/TridentGadget.lean}: the action permutes the indices of $x_i$,
 $p_i$ and $u_i$; for an input with a true literal an explicit coloring is
 proper; and under $(\F,\F,\F)$ every $p_i$ has color $\B$, which leaves the
@@ -744,7 +746,7 @@ e\circ\rho(\sigma)$ also fixes the literals and the anchors, so it equals
 $e$. The fourth composes the isomorphism with $\rho(\pi^{-1})$.
 
 % ---------------------------------------------------------------------------
-\section{The search (Section~IV-D)}\label{sec:search}
+\section{The search}\label{sec:search}
 
 The folder \lean{search/} contains the search engine of the package
 \lean{trident-symmetric-gadget-proof} and theorems that tie it to Part~1.
@@ -771,20 +773,24 @@ inputs: it returns \lean{some 1} exactly when, for each input, a proper
 3-coloring that respects the pins of the input exists if and only if the
 input satisfies the clause (\lean{gadgetK\_is\_validity} in
 \lean{Space.lean}). The search procedure
-\lean{searchSlice threeColoring parts true} walks all subsets of the free
-edge orbits of the composition, depth first, prunes a subtree as soon as a
-satisfiable input has become uncolorable, and collects the graphs that pass
-the check in the list \lean{found}. The list
+\lean{searchSlice threeColoring parts true} walks the subsets of the free
+edge orbits of the composition depth first. While at least eight free orbits
+remain undecided, it skips a subtree in which a satisfiable input has become
+uncolorable (pruning). It tests each graph that it reaches on four inputs,
+one for each number of true literals, and collects the graphs that pass in
+the list \lean{found}. The list
 \lean{compositions k [1, 2, 3, 6]} contains exactly the orbit compositions
 of $k$ (\lean{compositions\_are\_all\_orbit\_compositions}).
 
 \subsection{The candidate space is the set of gadgets of Definition 1}
 \begin{code}
-theorem gadget_is_candidate [Finite V] (g : Gadget V) (hv : g.Valid) :
+theorem gadget_is_candidate [Finite V] (g : Gadget V) :
     g.parts ∈ compositions (Nat.card {v // g.IsAux v}) [1, 2, 3, 6] ∧
     Statement.SymCandidate g.parts g.edgeList ∧
-    gadgetK threeColoring g.parts g.edgeList false = some 1 ∧
+    (g.Valid ↔ gadgetK threeColoring g.parts g.edgeList false = some 1) ∧
     Function.Injective g.toVertex ∧
+    (∀ v, g.toVertex v ∈ g.U.vertices) ∧
+    (∀ w ∈ g.U.vertices, ∃ v, g.toVertex v = w) ∧
     (∀ i, g.toVertex (g.lit i) = .lit i.val) ∧
     g.toVertex g.gT = .aux g.parts.length 0 ∧
     g.toVertex g.gF = .aux (g.parts.length + 1) 0 ∧
@@ -792,16 +798,20 @@ theorem gadget_is_candidate [Finite V] (g : Gadget V) (hv : g.Valid) :
     (∀ σ v, g.toVertex (g.ρ σ v) = g.U.act (toTable σ) (g.toVertex v)) ∧
     (∀ u v, g.G.Adj u v ↔ normEdge (g.toVertex u, g.toVertex v) ∈ g.edgeList)
 \end{code}
-Let \lean{g} be a valid gadget of Definition~1. By Lemma~6 its auxiliary
-orbits have sizes 1, 2, 3 or 6 and can be labeled so that the action is the
-engine's (\lean{OrbitLabels.lean}). Listing the orbits by size gives the
-composition \lean{g.parts}, and sending each vertex to its label gives the
-map \lean{g.toVertex} (\lean{Candidate.lean}). The theorem says that this
-composition is one that the search visits, that the edge list
-\lean{g.edgeList} of the relabeled gadget is a candidate, that it passes the
-judge, and that the relabeling is injective, respects the literals, the
-anchors and the two actions, and turns adjacency into membership in the edge
-list. So the search space misses no gadget.
+Let \lean{g} be a gadget of Definition~1 on a finite vertex set, valid or
+not. By Lemma~6 its auxiliary orbits have sizes 1, 2, 3 or 6 and can be
+labeled so that the action is the engine's (\lean{OrbitLabels.lean}).
+Listing the orbits by size gives the composition \lean{g.parts}, and sending
+each vertex to its label gives the map \lean{g.toVertex}
+(\lean{Candidate.lean}). The theorem says that this composition is in the
+list \lean{compositions}, that the edge list \lean{g.edgeList} of the
+relabeled gadget is a candidate, that \lean{g} is valid exactly when this
+candidate passes the judge (\lean{Gadget.valid\_iff} in
+\lean{CandidateValid.lean}), and that the relabeling is a bijection onto the
+vertices of the candidate space, respects the literals, the anchors and the
+two actions, and turns adjacency into membership in the edge list. It is
+onto because it is injective and the two vertex sets have the same size
+(\lean{Gadget.toVertex\_onto}). So the search space misses no gadget.
 \begin{code}
 structure Candidate where
   parts : List Nat
@@ -857,7 +867,7 @@ the edge list is \lean{tridentA} or \lean{tridentB}. Statements~1 and~2 say
 that these two lists are candidates and pass the judge
 (\lean{trident\_is\_symmetric\_candidate}, \lean{trident\_is\_valid}).
 
-\subsection{The search procedure visits every candidate}
+\subsection{The search procedure finds every valid candidate}
 \begin{code}
 theorem search_finds_every_valid_candidate :
     ∀ k, ∀ parts ∈ compositions k [1, 2, 3, 6], ∀ g : List Edge,
@@ -870,17 +880,22 @@ theorem search_finds_only_valid_candidates :
       ∀ x ∈ (searchSlice threeColoring parts true).2.found,
         SymCandidate parts x.1 ∧ gadgetK threeColoring parts x.1 false = some x.2
 \end{code}
-The first theorem is the completeness of the search: a candidate that passes
-the judge is in the found list of its composition, up to the order of its
-edges. The proof is an induction on the walk (\lean{ProofsWalk.lean},
-\lean{Search.lean}), with four ingredients. The walk reports every leaf whose
-graph passes the check. Pruning loses nothing, because adding edges never
-makes an uncolorable input colorable. Every graph that is closed under the
-action is a union of edge orbits, so it is the graph of a leaf
-(\lean{ProofsCover.lean}). And for such a graph the four input classes that
-the search tests decide all eight inputs (\lean{ProofsSym.lean}). The second
-theorem is the soundness: every found graph is the graph of a leaf that
-passes the check, hence a candidate that passes the judge.
+The search does not visit every candidate: pruning skips candidates, and the
+graphs that the search reaches are tested on four of the eight inputs. The
+first theorem is the completeness of the search and says that no valid
+candidate is lost: for a candidate that passes the judge, the found list of
+its composition contains an edge list with the same edge set. The proof is
+an induction on
+the walk (\lean{ProofsWalk.lean}, \lean{Search.lean}), with four
+ingredients. The walk reports every subset of the free orbits whose graph
+passes the check, provided that pruning skips no such graph. Pruning skips
+none, because adding edges never makes an uncolorable input colorable. Every
+graph that is closed under the action is a union of edge orbits, so it is
+the graph of a subset of the free orbits (\lean{ProofsCover.lean}). And for
+such a graph the four input classes that the search tests decide all eight
+inputs (\lean{ProofsSym.lean}). The second theorem is the soundness: every
+found graph is the graph of a leaf that passes the check, hence a candidate
+that passes the judge.
 \begin{code}
 theorem search_finds_every_valid_gadget {V : Type} [Finite V] (g : Gadget V) (hv : g.Valid) :
     g.parts ∈ compositions (Nat.card {v // g.IsAux v}) [1, 2, 3, 6] ∧
@@ -916,7 +931,7 @@ the trident are found. These theorems are about the search function itself.
 They are proved without evaluating it.
 
 The package \lean{trident-symmetric-gadget-proof} evaluates the search on six
-compositions with compiled code (\lean{native\_decide}, about 8.5~hours).
+compositions with compiled code (\lean{native\_decide}, about 9~hours).
 The same six statements are theorems here, with the same names:
 \begin{code}
 theorem sym_empty_13 : (searchSlice threeColoring [1, 3] true).2.found = []
@@ -987,9 +1002,15 @@ Corollary~9(ii) and the deletion in the case $d=0$ are one construction
 the least number of auxiliary vertices in Section~\ref{sec:thm16}.
 \item \emph{The search of Part~2 is the engine of the package}
 \lean{trident-symmetric-gadget-proof}. It is not the program
-\lean{Sweep.lean} of the parent folder, whose run the
-paper reports. Both enumerate the same candidates, but only the engine is
-the subject of the theorems.
+\lean{Sweep.lean} of the parent folder, whose run the paper reports in
+Section~IV-D, and the two do not enumerate the same candidates. For each of
+the 24 orbit compositions with at most six auxiliary vertices, the engine has
+two switches more than the paper's Table~1 counts: the orbit of the edges
+from the literals to $\GT$ and the orbit of the edges from the literals to
+$\GF$. Definition~1 allows these edges, and the paper's enumeration leaves
+them out by the remark after Definition~1. So the engine has four times as
+many candidates, for example $2^{16}$ for \lean{[3, 3]}, where Table~1 lists
+$2^{14}$. Only the engine is the subject of the theorems.
 \item \emph{The found list of the composition} \lean{[3, 3]} is described by
 the edge sets of its entries. The theorems do not say that it has exactly
 two entries, or in which order.
@@ -1001,10 +1022,14 @@ two entries, or in which order.
 \begin{itemize}
 \item Lean's kernel (Lean v4.33.0) and the standard axioms \lean{propext},
 \lean{Classical.choice} and \lean{Quot.sound}. The build prints the axioms of
-the two theorems of Part~1, and these three are all of them. The ends of
-\lean{Theorem16.lean} and of \lean{Statement.lean} also state them as
-expected output (\lean{\#guard\_msgs}), so the build fails if one of these
-results depends on any other axiom.
+the two theorems of Part~1, and these three are all of them. The files also
+state the axioms as expected output (\lean{\#guard\_msgs}): for the two
+theorems at the end of \lean{Theorem16.lean}, for every statement of
+\lean{Statement.lean} at its end, and for the five results of Part~1 that
+the two theorems do not use (\lean{Gadget.lemma6}, \lean{Gadget.fiber\_card},
+\lean{ClauseGadget.lemma11}, \lean{Gadget.toClauseGadget\_spec},
+\lean{iso\_of\_literal\_set}) at the ends of their files. So the build fails
+if one of these results depends on any other axiom.
 \item Mathlib v4.33.0.
 \end{itemize}
 There is no \lean{native\_decide} and no \lean{sorry}. The tactic
@@ -1082,15 +1107,16 @@ their own.
 \begin{itemize}
 \item \lean{lake build} on Lean v4.33.0 with Mathlib v4.33.0: exit code 0,
 1399 jobs, no warning; the package's own 49 files take
-about 22 seconds on the build machine once Mathlib's compiled files are in
+about 20 seconds on the build machine once Mathlib's compiled files are in
 place. The build prints the axioms of the two theorems of Part~1 and checks
-the axioms of these and of seven statements of Part~2 against the three
-standard axioms.
+the axioms of these, of every statement of \lean{Statement.lean} and of five
+further results of Part~1 against the three standard axioms
+(Section~\ref{sec:trust}).
 \item \lean{lake env lean checks/ProofCone.lean} follows types, definition
-bodies and proofs from the results of the package: the statements of
-Sections~\ref{sec:statement}--\ref{sec:search} that carry a name of the
-paper or of \lean{Statement.lean}. Of the 868 declarations of the
-package, 707 are used. No declaration written in the source is unused.
+bodies and proofs from the results of the package: the two theorems, the
+results of Part~1 that they do not use, and the statements of Part~2 (the
+script lists its 31 roots). Of the 869 declarations of the
+package, 708 are used. No declaration written in the source is unused.
 The other 161 are generated by Lean: recursors and other constructions
 for structures and inductive types, derived instances, and the projections
 of structure fields that no result reads.
@@ -1099,9 +1125,9 @@ of structure fields that no result reads.
 % ---------------------------------------------------------------------------
 \section{Files}\label{sec:files}
 
-The folder \lean{proof/} has 21 files with 3,712
+The folder \lean{proof/} has 21 files with 3,749
 lines, and the folder \lean{search/} has 28 files with
-6,243 lines.
+6,350 lines.
 
 \begin{center}
 \begin{tabular}{@{}lrl@{}}
@@ -1112,15 +1138,15 @@ file of \lean{proof/} & lines & content\\
 \lean{OrbitStructure.lean} & 173 & Lemma 6: the subgroups of $S_3$ and the orbit types\\
 \lean{TridentGadget.lean} & 145 & the trident as a gadget, Theorem 4\\
 \lean{Basics.lean} & 367 & anchors, colorings, inputs, the standing assumption, counting\\
-\lean{Lemma6.lean} & 351 & Lemma 6 for gadgets; layers and their attachments\\
-\lean{Definition2.lean} & 76 & Definition 2 and Claim 1\\
+\lean{Lemma6.lean} & 359 & Lemma 6 for gadgets; layers and their attachments\\
+\lean{Definition2.lean} & 84 & Definition 2 and Claim 1\\
 \lean{Lemma7.lean} & 210 & Lemma 7\\
 \lean{Lemma8.lean} & 97 & Lemma 8\\
 \lean{Removal.lean} & 211 & removing auxiliary vertices from a gadget\\
 \lean{Corollary9.lean} & 141 & Corollary 9; minimum gadgets\\
 \lean{Lemma10.lean} & 79 & Lemma 10 and Claim 2\\
 \lean{Lemma11.lean} & 65 & Lemma 11\\
-\lean{ClauseGadget.lean} & 189 & Lemma 11 for arbitrary clause gadgets\\
+\lean{ClauseGadget.lean} & 202 & Lemma 11 for arbitrary clause gadgets\\
 \lean{Corollary12.lean} & 46 & Corollary 12\\
 \lean{Lemma13.lean} & 143 & Lemma 13\\
 \lean{TwoLayers.lean} & 254 & gadgets with two size-3 orbits\\
@@ -1128,7 +1154,7 @@ file of \lean{proof/} & lines & content\\
 \lean{TriangleAnalysis.lean} & 216 & the triangle analysis\\
 \lean{Lemma15.lean} & 156 & Lemma 15\\
 \lean{Theorem16.lean} & 370 & Theorem 16\\
-\lean{Uniqueness.lean} & 152 & the remark after Theorem 16\\
+\lean{Uniqueness.lean} & 160 & the remark after Theorem 16\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1160,12 +1186,12 @@ file of \lean{search/} & lines & content\\
 \lean{OrbitLabels.lean} & 177 & orbits labeled as the engine labels them (Lemma~6)\\
 \lean{Candidate.lean} & 373 & a gadget of Definition~1 as a candidate: composition and relabeling\\
 \lean{CandidateGraph.lean} & 156 & its edge list is a candidate\\
-\lean{CandidateValid.lean} & 138 & its validity is the verdict of the judge\\
+\lean{CandidateValid.lean} & 148 & its validity is the verdict of the judge\\
 \lean{CandidateGadget.lean} & 389 & a candidate as a gadget of Definition~1\\
 \lean{Trident.lean} & 102 & the two labelings of the trident\\
 \lean{CandidateTrident.lean} & 364 & Theorem~16 in the candidate space\\
 \lean{Search.lean} & 301 & the search is complete and sound\\
-\lean{Statement.lean} & 335 & the statements of Part~2\\
+\lean{Statement.lean} & 432 & the statements of Part~2\\
 \bottomrule
 \end{tabular}
 \end{center}

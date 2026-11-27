@@ -187,3 +187,16 @@ theorem lemma11 (hv : C.Valid) :
 end ClauseGadget
 
 end Def1
+
+-- The build fails if one of these results depends on an axiom other than the three
+-- standard ones.
+/--
+info: 'Def1.ClauseGadget.lemma11' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Def1.ClauseGadget.lemma11
+/--
+info: 'Def1.Gadget.toClauseGadget_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Def1.Gadget.toClauseGadget_spec

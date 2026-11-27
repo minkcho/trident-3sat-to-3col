@@ -74,3 +74,11 @@ theorem fiber_card {v : V} (hfree : ∀ σ, g.ρ σ v = v ↔ σ = 1) {k : Fin 3
 end Gadget
 
 end Def1
+
+-- The build fails if this result depends on an axiom other than the three
+-- standard ones.
+/--
+info: 'Def1.Gadget.fiber_card' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Def1.Gadget.fiber_card

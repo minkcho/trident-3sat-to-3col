@@ -4,14 +4,17 @@ A machine-checked development, in Lean 4 with Mathlib, in two parts.
 
 - [`proof/`](proof) proves Theorem 16 of the paper by the paper's own
   argument (Section IV), lemma by lemma: every valid S3-symmetric clause
-  gadget for the reduction from 3SAT to 3-coloring has at least six
-  auxiliary vertices, and one with six is the trident. It uses Mathlib only.
-- [`search/`](search) holds the search of the paper's Section IV-D (the
+  gadget for the reduction from 3SAT to 3-coloring, on a finite vertex set,
+  has at least six auxiliary vertices, and one with six is the trident. It
+  uses Mathlib only.
+- [`search/`](search) holds an exhaustive search for valid gadgets (the
   candidate space, the judge and the search procedure) and ties it to
   Definition 1 and to Theorem 16. The candidate space is exactly the set of
-  gadgets of Definition 1, the search procedure visits all of it and reports
-  only valid candidates, and what the search returns follows from
-  Theorem 16.
+  gadgets of Definition 1 on finite vertex sets, the search procedure finds
+  every valid candidate and reports only valid candidates, and what the
+  search returns follows from Theorem 16. The search is the engine of
+  `../trident-symmetric-gadget-proof/`. It is not the enumeration program of
+  the paper's Section IV-D; "Remarks on the search" states the difference.
 
 No statement uses a run of the search or compiled code. Every result depends
 on Lean's three standard axioms only, and the package builds in less than a
@@ -44,13 +47,18 @@ checking is that the statements say what the paper claims.
      isomorphism that fixes each literal and each anchor.
 
    These two statements use only the seven definitions of step 1.
-3. Read [`search/Statement.lean`](search/Statement.lean), about 330 lines.
-   It lists the statements about the search. They are described below.
+3. Read [`search/Statement.lean`](search/Statement.lean), about 430 lines.
+   It lists the statements about the search. They are described below. Its
+   last 110 lines only check axioms.
 4. Run `lake exe cache get` and then `lake build`. The build checks every
    proof and prints the axioms of the two theorems: `propext`,
-   `Classical.choice` and `Quot.sound`. It fails if these theorems, or the
-   statements about the search, depend on any other axiom (`#guard_msgs` at
-   the end of `Theorem16.lean` and of `Statement.lean`).
+   `Classical.choice` and `Quot.sound`. It fails if one of the following
+   depends on any other axiom: the two theorems, a statement of
+   `search/Statement.lean`, or one of five further results of Part 1
+   (`Gadget.lemma6`, `Gadget.fiber_card`, `ClauseGadget.lemma11`,
+   `Gadget.toClauseGadget_spec`, `iso_of_literal_set`). The checks are
+   `#guard_msgs` commands at the ends of the files. Every other declaration
+   written in the package is used by one of these 26 results.
 
 ## Part 1: the paper's proof (`proof/`)
 
@@ -79,7 +87,7 @@ namespace `Def1`.
 | Theorem 16 | `Theorem16.lean` | `Gadget.minimum_is_trident`, `minimum_unique` |
 | the remark after Theorem 16 (the isomorphism is unique) | `Uniqueness.lean` | `trident_rigid`, `iso_trident_unique`, `iso_trident_equivariant`, `iso_of_literal_set` |
 
-Three files support the chain. `Basics.lean` holds the anchors as a family,
+Four files support the chain. `Basics.lean` holds the anchors as a family,
 colorings, inputs, recoloring and counting. `Removal.lean` removes a set of
 auxiliary vertices from a gadget; it gives the merge of Corollary 9(ii) and
 the deletion of a disconnected layer. `TwoLayers.lean` indexes the twelve
@@ -114,6 +122,12 @@ auxiliary vertices is a minimum one.
 - Every step of the paper's proof of Theorem 16 is formalized, in the
   paper's order, and no gap was found in it. The Lean proofs differ from the
   text in the details listed below.
+- Lemma 6 is proved as one statement (`Gadget.lemma6`), but no other proof
+  uses it in this form. The proofs use its parts: the four stabilizers of a
+  vertex (`Gadget.stab_cases`), the literal neighbors of a vertex that the
+  even permutations fix (`Gadget.adj_lit_of_even_fixed`), and the edges of a
+  size-3 orbit (`Gadget.Layer.adj_self`, `Gadget.Layer.adj_lit`). Part 2
+  uses the orbit types (`orbit_structure` in `OrbitStructure.lean`).
 - Two hypotheses are not used by the formal proofs. Lemma 13 does not use
   that the attachment of the matched base is not crossed. Lemma 15 does not
   use that the orbit is free, only that it is the sole auxiliary orbit.
@@ -148,22 +162,29 @@ auxiliary vertices is a minimum one.
 
 ## Part 2: the search (`search/`)
 
-The search of Section IV-D works on a candidate space. For an orbit
+The search works on a candidate space. For an orbit
 composition `parts`, a candidate is an edge list on the vertices of the
 composition and the palette that is closed under the S3 action and contains
 the forced edges (`SymCandidate parts g`). The judge `gadgetK` tests a
-candidate on the eight inputs. The search procedure `searchSlice` walks all
-subsets of the free edge orbits of a composition, prunes a subtree when a
-satisfiable input has become uncolorable, and collects the candidates that
-pass in the list `found`.
+candidate on the eight inputs. The search procedure `searchSlice` walks the
+subsets of the free edge orbits of a composition depth first. It may skip a
+subtree in which a satisfiable input has become uncolorable (pruning). It
+tests each graph that it reaches on four inputs, one for each number of true
+literals, and collects those that pass in the list `found`.
 
 The statements of [`search/Statement.lean`](search/Statement.lean):
 
 **The candidate space is the set of gadgets of Definition 1.**
-- `gadget_is_candidate`: every valid gadget of Definition 1 is, after a
-  relabeling of its vertices, a candidate that passes the judge. Its orbit
-  composition is in the list `compositions k [1, 2, 3, 6]` that the search
-  visits. The proof uses the paper's Lemma 6.
+- `gadget_is_candidate`: every gadget of Definition 1 on a finite vertex
+  set, valid or not, is a candidate after a relabeling of its vertices, and
+  it is valid exactly when the candidate passes the judge. In detail: the
+  relabeling is a bijection onto the vertices of the candidate space, keeps
+  the literals and the anchors, commutes with the two actions, and turns
+  adjacency into membership in an edge list, and this edge list is a
+  candidate. The orbit composition is in the list
+  `compositions k [1, 2, 3, 6]`, over which the statements about the search
+  range. The proof uses the orbit types of the paper's Lemma 6
+  (`orbit_structure`).
 - `candidate_is_gadget`: every candidate is a gadget of Definition 1 with as
   many auxiliary vertices as its composition counts, and it passes the judge
   exactly when the gadget is valid.
@@ -179,20 +200,27 @@ The statements of [`search/Statement.lean`](search/Statement.lean):
   candidate with at most six auxiliary vertices that passes the judge has
   composition `[3, 3]` and the edge set of `tridentA` or of `tridentB`.
 
-  Statements 3 and 4 follow from `minimum_unique` through
-  `candidate_is_gadget`.
+  Statements 3 and 4 follow from `minimum_unique` through the gadget of a
+  candidate (`Candidate.valid_iff` and `Candidate.card_aux`, the facts that
+  `candidate_is_gadget` collects). Statement 4 also uses that the
+  isomorphism onto the trident commutes with the actions
+  (`iso_trident_equivariant`).
 
-**The search procedure visits every candidate and reports only candidates.**
-- `search_finds_every_valid_candidate`: every candidate that passes the judge
-  is in the list `found` of the search of its composition, up to the order of
-  its edges.
+**The search procedure finds every valid candidate and reports only valid candidates.**
+- `search_finds_every_valid_candidate`: for every candidate that passes the
+  judge, the list `found` of the search of its composition contains an edge
+  list with the same edge set.
 - `search_finds_only_valid_candidates`: every graph in `found` is a candidate
   that passes the judge.
 - `search_finds_every_valid_gadget`: so every valid gadget of Definition 1
-  is found by the search.
+  on a finite vertex set is found by the search, in the same sense.
 
-  These are proved by induction on the walk of the search. Pruning loses
-  nothing because adding edges never makes an uncolorable input colorable.
+  The search does not visit every candidate: pruning skips candidates, and
+  the graphs that the search reaches are tested on four of the eight inputs.
+  The first statement says that no valid candidate is lost by this. Pruning
+  loses nothing because adding edges never makes an uncolorable input
+  colorable, and on an S3-symmetric candidate the four inputs decide the
+  eight. The statements are proved by induction on the walk of the search.
 
 **What the search returns.**
 - `search_finds_nothing_below_six`: on every orbit composition with at most
@@ -201,6 +229,8 @@ The statements of [`search/Statement.lean`](search/Statement.lean):
   auxiliary vertices, whatever is found lies on `[3, 3]` and has the edge set
   of `tridentA` or of `tridentB`.
 - `search_finds_the_trident`: both labelings are found.
+- `search_finds_nothing_at_six_outside_trident_slice`: with six auxiliary
+  vertices, `found` is empty on every composition other than `[3, 3]`.
 - `sym_empty_13`, `sym_empty_23`, `sym_empty_113`, `sym_empty_6`,
   `sym_empty_123`, `sym_empty_1113`: the search finds nothing on these six
   compositions.
@@ -213,7 +243,7 @@ obtains its Statements 3 and 4 (there
 `valid_symmetric_gadget_up_to_12_vertices_is_trident`) by running the search
 at build time: the six statements `sym_empty_…` and the result of the
 `[3, 3]` sweep are evaluated by compiled code (`native_decide`), which takes
-about 8.5 hours and adds the compiler to the trusted base. Here the six
+about 9 hours and adds the compiler to the trusted base. Here the six
 statements have the same names and the same wording, and they are
 consequences of Theorem 16. The search is not run, and the build takes
 seconds.
@@ -223,11 +253,23 @@ the theorem. In this one the theorem, proved by the paper's argument,
 determines what the search can return, and the proved completeness of the
 search says that the search would have found any other valid gadget.
 
+The README of that package calls the engine's candidate space "the paper's
+candidate space (Definition 1) plus two more switches", the literal–G_T and
+the literal–G_F orbit. There "the paper's candidate space" means the
+candidates of the paper's enumeration: the gadgets of Definition 1 without
+an edge from a literal to G_T or G_F, which the paper excludes by the remark
+after Definition 1. Definition 1 by itself allows such an edge. So the two
+READMEs describe the same space. The engine's candidates are the gadgets of
+Definition 1 (`gadget_is_candidate`, `candidate_is_gadget`), and the paper's
+enumeration covers those in which the two orbits are switched off.
+
 ### Definitions needed to read the statements
 
 The statements of Part 2 speak about the engine. To check them, read the
-definitions they use: 133 declarations, 647 lines. The search program itself
-is in the first three rows.
+definitions they use: 89 declarations, 590 lines. Four of them are the
+definitions of `Definition1.lean` from step 1 (36 lines). The other 85 are
+in `search/` (554 lines) and are listed below. The search program itself is
+in the first three rows.
 
 | file | lines | what |
 |---|---|---|
@@ -240,13 +282,24 @@ is in the first three rows.
 | `search/Candidate.lean`, `search/CandidateGraph.lean`, `search/OrbitLabels.lean` | in parts | `parts`, `toVertex`, `edgeList`, `toTable` (`gadget_is_candidate`) |
 | `search/ProofsColor.lean`, `search/ProofsColorK.lean`, `search/ProofsSym.lean` | 28–39; 23–31; 636–640, 816–821 | `SpecExt`, `rowPins`, `rowInst` (the meaning of the judge in `Space.lean`) |
 
+The table leaves out one proof that these definitions refer to:
+`instance : LawfulBEq Vertex` (`search/ProofsAction.lean`, lines 254–277).
+Three more proofs lie inside the listed ranges: `Candidate.lit_mem`,
+`Candidate.anchor_mem` and `Gadget.orb_data`. Lean checks all four, and they
+do not change what the definitions mean.
+
 ### Remarks on the search
 
 - The search in this package is the engine of
   `../trident-symmetric-gadget-proof/`. It is not the program
-  `../Sweep.lean`, whose run the paper reports. Both enumerate the same
-  candidates, as the README of the parent folder describes, but only the
-  engine is the subject of the theorems.
+  `../Sweep.lean`, whose run the paper reports in Section IV-D, and the two
+  do not enumerate the same candidates. For each of the 24 orbit
+  compositions with at most six auxiliary vertices, the engine has two
+  switches more than the paper's Table 1 counts: the literal–G_T orbit and
+  the literal–G_F orbit. Definition 1 allows these edges, and the paper's
+  enumeration leaves them out by the remark after Definition 1. So the
+  engine has four times as many candidates, for example 2^16 for `[3, 3]`,
+  where Table 1 lists 2^14. Only the engine is the subject of the theorems.
 - `search_finds_the_trident` and `search_finds_only_the_trident` describe the
   list `found` of the `[3, 3]` sweep by the edge sets of its entries. They
   do not say that the list has exactly two entries, or in which order.
@@ -266,10 +319,11 @@ evaluates, for small concrete facts only.
   a vertex in the trident (`Uniqueness.lean`).
 - In `search/`: checks of the engine's hand-written tables of the six
   permutations (closure, inverses, parity, and which permutations fix the
-  first vertex of a part); the encoding of the eight inputs; the comparison
-  of the edge lists `tridentA` and `tridentB` with the trident graph, and
-  the verdict of the judge on these two lists; memberships and inequalities
-  of small numbers and lists.
+  first vertex of a part); the encoding of the eight inputs, the action of
+  the six permutations on them and its four classes; the comparison of the
+  edge lists `tridentA` and `tridentB` with the trident graph, that these
+  two lists are candidates, and the verdict of the judge on them;
+  memberships and inequalities of small numbers and lists.
 
 No `decide` enumerates candidates of the search.
 
@@ -290,14 +344,14 @@ Run it in the built package:
 lake env lean checks/ProofCone.lean
 ```
 
-It reports 868 declarations, 707 used. No declaration written in the source
+It reports 869 declarations, 708 used. No declaration written in the source
 is unused. The other 161 are generated by Lean: recursors and other
 constructions for structures and inductive types, derived instances, and the
 projections of structure fields that no result reads.
 
 ## Files
 
-- `proof/`: 21 files, 3,712 lines.
-- `search/`: 28 files, 6,243 lines. The engine and its lemmas come from
+- `proof/`: 21 files, 3,749 lines.
+- `search/`: 28 files, 6,350 lines. The engine and its lemmas come from
   `../trident-symmetric-gadget-proof/`, cut down to the declarations that
   the statements use.

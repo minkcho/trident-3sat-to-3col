@@ -132,10 +132,11 @@ checks this.
 The folder `paper-proof-and-search-trident_minimum_unique/` holds a formal
 proof of Theorem 16 in Lean 4 with Mathlib that follows the paper's own
 argument, the lemma chain of Section IV (completed by Claude, under
-evaluation by Human). It also ties the search of Section IV-D to this proof:
-the candidate space of the search is exactly the set of gadgets of
-Definition 1, the search visits every candidate, and what the search returns
-follows from Theorem 16. No statement in it uses a run of the search or
+evaluation by Human). It also contains the search engine of
+`trident-symmetric-gadget-proof/` and ties it to this proof: the candidate
+space of the engine is exactly the set of gadgets of Definition 1 on finite
+vertex sets, the search finds every valid candidate, and what the search
+returns follows from Theorem 16. No statement in it uses a run of the search or
 compiled code. It depends on Lean's standard axioms only and builds in less
 than a minute once Mathlib is in place. Its report
 (`report/proof-report.pdf`) gives the Lean statements next to the paper's.
