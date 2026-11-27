@@ -8,8 +8,8 @@ import search.Rows
   (`envInput`). A proper 3-coloring of the gadget that extends this input
   (`Gadget.Extends`, Definition 1) is the same thing as a coloring of the
   candidate that respects the pins of the row `env` (`SpecExt`):
-  `specExt_iff_extends`. Hence a valid gadget passes the engine's judge:
-  `gadgetK_of_valid`.
+  `specExt_iff_extends`. Hence a gadget is valid exactly when its candidate
+  passes the engine's judge: `valid_iff`.
 -/
 
 namespace Def1
@@ -124,14 +124,24 @@ theorem specExt_iff_extends (env : Nat) :
       intro h
       exact hproper u v huv (Fin.ext (Option.some.inj h).symm)
 
-/-- A valid gadget (Definition 1) passes the engine's eight-row judge
-    (by `gadgetK_is_validity`). -/
-theorem gadgetK_of_valid (hv : g.Valid) :
-    gadgetK threeColoring g.parts g.edgeList false = some 1 := by
+/-- A gadget (Definition 1) is valid exactly when its candidate passes the
+    engine's eight-row judge (by `gadgetK_is_validity`). Every input of
+    Definition 1 is the input of a row (`exists_env`). -/
+theorem valid_iff :
+    g.Valid ↔ gadgetK threeColoring g.parts g.edgeList false = some 1 := by
   obtain ⟨hjudge, hrow⟩ := Statement.gadgetK_is_validity g.parts g.edgeList 1
-  refine hjudge.mpr ⟨rfl, fun env henv => ?_⟩
-  rw [hrow g.symCandidate.1 env, ← envInput_some_true env henv, ← hv (envInput env)]
-  exact g.specExt_iff_extends env
+  rw [hjudge]
+  constructor
+  · intro hv
+    refine ⟨rfl, fun env henv => ?_⟩
+    rw [hrow g.symCandidate.1 env, ← envInput_some_true env henv, ← hv (envInput env)]
+    exact g.specExt_iff_extends env
+  · rintro ⟨-, h⟩ α
+    obtain ⟨env, henv, rfl⟩ := exists_env α
+    have h1 := h env henv
+    rw [hrow g.symCandidate.1 env] at h1
+    exact (g.specExt_iff_extends env).symm.trans
+      (h1.trans (envInput_some_true env henv).symm)
 
 end Gadget
 

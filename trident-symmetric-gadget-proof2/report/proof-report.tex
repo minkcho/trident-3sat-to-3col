@@ -1,0 +1,783 @@
+% A readable account of the formal proof of Theorem 16 by search (second version).
+% Build: lualatex proof-report.tex (twice)
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}[Scale=0.82]
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{booktabs,longtable,array}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
+\usepackage{enumitem}
+\setlist{itemsep=2pt,topsep=4pt}
+
+\newcommand{\leanus}{\textunderscore\allowbreak}
+\newcommand{\lean}[1]{{\ttfamily\let\_\leanus #1}}
+\emergencystretch=3em
+\newcommand{\GT}{G_{\mathrm{T}}}
+\newcommand{\GF}{G_{\mathrm{F}}}
+\newcommand{\GB}{G_{\mathrm{B}}}
+\newcommand{\T}{\mathrm{T}}
+\newcommand{\F}{\mathrm{F}}
+\newcommand{\B}{\mathrm{B}}
+\DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small,frame=leftline,framerule=0.6pt,rulecolor=\color{gray!50},xleftmargin=1em}
+\theoremstyle{definition}
+\newtheorem{fact}{Fact}
+
+\title{The formal proof of Theorem~16 by exhaustive search\\[2pt]
+\large What the Lean statements say, how they are proved, and what is trusted}
+\author{Companion to\\ \emph{The Trident: A Minimum Symmetric Clause Gadget for 3SAT to 3-Coloring}\\
+M.~Cho, H.~Kim, and I.~Shin}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+This note accompanies the Lean~4 package
+\lean{trident-symmetric-gadget-proof2}, the second version of
+\lean{trident-symmetric-gadget-proof}. The package proves Theorem~16
+of the paper for the paper's Definition~1. A gadget of Definition~1 has six
+fixed vertices, the three literals and the palette triangle, and auxiliary
+vertices. Every valid $S_3$-symmetric clause gadget has at least six
+auxiliary vertices, and one with six is the trident. The statement uses only
+Mathlib's graphs and permutations (Section~\ref{sec:statement}). The proof has two layers. The
+orbit types of the paper's Lemma~6 turn a gadget into a candidate of a
+search engine (Section~\ref{sec:def1}), and in the engine's candidate space
+the result
+follows from two proved reductions and an exhaustive search whose runs are
+repeated at build time (Sections~\ref{sec:model}, \ref{sec:statements},
+\ref{sec:proof} and~\ref{sec:color}). The note
+explains the statements in plain mathematics, follows the proof from the top
+down, lists the trusted base, and states what is \emph{not} formalized.
+The formal verification was written with Claude (Anthropic) and is under
+evaluation by the authors; it is not part of the article, whose Theorem~16 is
+proved by the argument of its Section~IV.
+\end{abstract}
+
+\tableofcontents
+
+% ---------------------------------------------------------------------------
+\section{The claim}\label{sec:claim}
+
+The paper's Definition~1 calls a graph $G$ an \emph{$S_3$-symmetric clause
+gadget} for the clause $C=(x_0\lor x_1\lor x_2)$ if it consists of three
+pairwise non-adjacent literal vertices $x_0,x_1,x_2$, a palette triangle
+$\GT,\GF,\GB$ with $\GB$ adjacent to every literal, and auxiliary vertices,
+together with a group action $\rho:S_3\to\operatorname{Aut}(G)$ with
+$\rho(\sigma)(x_i)=x_{\sigma(i)}$ that fixes each anchor. The gadget is
+\emph{valid} if, with the anchors colored $\T,\F,\B$, a proper 3-coloring
+extending a literal coloring in $\{\T,\F\}^3$ exists exactly for the
+assignments that satisfy $C$. So every gadget contains six fixed vertices,
+the literals and the anchors, and Theorem~16 counts the auxiliary vertices
+added to them.
+
+\paragraph{Theorem~16 (paper).} Every valid $S_3$-symmetric clause gadget has
+at least six auxiliary vertices, and with six it is the trident, up to a graph
+isomorphism that fixes each anchor and each literal vertex.
+
+\medskip
+The package proves this statement as it stands, for gadgets on a finite
+vertex set (\lean{Def1.minimum\_unique}), and it proves that the trident is
+such a gadget (\lean{Def1.trident\_is\_valid\_gadget}); Section~\ref{sec:statement}
+gives both in Lean. The proof has two layers. The first passes from
+Definition~1 to the candidate space of a search engine by the orbit types of
+the paper's Lemma~6 (Section~\ref{sec:def1}). The second works inside the candidate space
+(Section~\ref{sec:model}): it combines two proved reductions with seven
+compiled re-runs of the search and one kernel-checked re-run
+(Section~\ref{sec:proof}). Section~\ref{sec:gaps} lists what is not
+formalized.
+
+% ---------------------------------------------------------------------------
+\section{The statement in Lean}\label{sec:statement}
+
+\lean{atlas/Definition1.lean} (97 lines) states Definition~1 and the trident
+with Mathlib's simple graphs and permutations. It does not import the search
+engine. The two theorems at the end of \lean{atlas/Theorem16.lean} use these
+definitions only, so what the package proves can be checked from this
+section.
+
+\subsection{Definition 1}
+\begin{code}
+structure Gadget (V : Type) where
+  G : SimpleGraph V
+  lit : Fin 3 → V
+  gT : V
+  gF : V
+  gB : V
+  lit_inj : Function.Injective lit
+  lit_ne_anchor : ∀ i, lit i ≠ gT ∧ lit i ≠ gF ∧ lit i ≠ gB
+  lit_nonadj : ∀ i j, ¬ G.Adj (lit i) (lit j)
+  palette : G.Adj gT gF ∧ G.Adj gF gB ∧ G.Adj gB gT
+  fan : ∀ i, G.Adj gB (lit i)
+  ρ : Equiv.Perm (Fin 3) →* (G ≃g G)
+  ρ_lit : ∀ σ i, ρ σ (lit i) = lit (σ i)
+  ρ_anchor : ∀ σ, ρ σ gT = gT ∧ ρ σ gF = gF ∧ ρ σ gB = gB
+\end{code}
+\begin{itemize}
+\item \lean{G} is a simple graph on the vertex type \lean{V}: undirected and
+without loops.
+\item \lean{lit 0}, \lean{lit 1}, \lean{lit 2} are the literals $x_0,x_1,x_2$,
+and \lean{gT}, \lean{gF}, \lean{gB} are the anchors. The six are distinct:
+two literals by \lean{lit\_inj}, a literal and an anchor by
+\lean{lit\_ne\_anchor}, and two anchors because they are adjacent.
+\item \lean{lit\_nonadj}, \lean{palette}, \lean{fan}: the literals are
+pairwise non-adjacent, the anchors form a triangle, and $\GB$ is adjacent to
+every literal.
+\item \lean{ρ} is a group homomorphism from $S_3$, the permutations of
+$\{0,1,2\}$, to the automorphisms of the graph (\lean{G ≃g G}, with
+composition). It permutes the literals naturally (\lean{ρ\_lit}) and fixes
+each anchor (\lean{ρ\_anchor}).
+\end{itemize}
+Every other vertex is an auxiliary vertex:
+\begin{code}
+def Gadget.IsAux (g : Gadget V) (v : V) : Prop :=
+  (∀ i, v ≠ g.lit i) ∧ v ≠ g.gT ∧ v ≠ g.gF ∧ v ≠ g.gB
+\end{code}
+Nothing else is assumed. In particular an edge between a literal and $\GT$
+or $\GF$ is allowed, as in Definition~1 itself; the paper excludes such edges
+afterwards by an argument.
+
+\paragraph{The six fixed vertices.} Every gadget contains the three
+literals, which carry the input, and the three anchors, whose colors are
+fixed. What varies from gadget to gadget is the set of auxiliary vertices,
+the edges other than the palette triangle and the edges from $\GB$ to the
+literals, and the action on the auxiliary vertices. The results below count
+the auxiliary vertices added to the six fixed ones. They say nothing about
+arbitrary graphs with at most twelve vertices: a graph without this frame,
+or with a symmetry that moves an anchor, is not a gadget of Definition~1.
+
+\begin{code}
+def Gadget.Extends (g : Gadget V) (α : Fin 3 → Bool) : Prop :=
+  ∃ c : V → Fin 3, (∀ u v, g.G.Adj u v → c u ≠ c v) ∧
+    c g.gT = 0 ∧ c g.gF = 1 ∧ c g.gB = 2 ∧
+    ∀ i, c (g.lit i) = if α i then 0 else 1
+
+def Gadget.Valid (g : Gadget V) : Prop :=
+  ∀ α : Fin 3 → Bool, g.Extends α ↔ ∃ i, α i = true
+\end{code}
+The colors $0,1,2$ stand for $\T,\F,\B$. \lean{g.Extends α} says that some
+proper 3-coloring gives the anchors the colors $\T,\F,\B$ and gives literal
+$i$ the color $\T$ if \lean{α i} is true and $\F$ otherwise. \lean{g.Valid}
+says that this holds exactly for the inputs \lean{α} with a true literal,
+that is, for the inputs that satisfy $C$.
+
+\subsection{The trident}
+\begin{code}
+inductive TV
+  | x (i : Fin 3)
+  | p (i : Fin 3)
+  | u (i : Fin 3)
+  | gT
+  | gF
+  | gB
+
+def tridentEdge : TV → TV → Prop
+  | .x i, .p j => i = j
+  | .p i, .u j => i = j
+  | .p _, .gT => True
+  | .u i, .u j => i ≠ j
+  | .x _, .gB => True
+  | .gT, .gF => True
+  | .gF, .gB => True
+  | .gB, .gT => True
+  | _, _ => False
+
+def trident : SimpleGraph TV := SimpleGraph.fromRel tridentEdge
+\end{code}
+\lean{SimpleGraph.fromRel} makes the relation symmetric and removes loops.
+So \lean{trident} has twelve vertices and the 18 edges $x_ip_i$, $p_iu_i$,
+$p_i\GT$, $u_iu_j$ ($i\ne j$), $x_i\GB$ and the palette triangle
+(Fig.~2(c) of the paper).
+
+\subsection{The two theorems}
+\begin{code}
+theorem trident_is_valid_gadget :
+    (∃ g : Gadget TV, g.G = trident ∧ g.lit = TV.x ∧ g.gT = TV.gT ∧
+      g.gF = TV.gF ∧ g.gB = TV.gB ∧ g.Valid ∧
+      Nat.card {v // g.IsAux v} = 6) ∧ Fintype.card TV = 12
+
+theorem minimum_unique [Fintype V] (g : Gadget V) (hv : g.Valid) :
+    6 ≤ Nat.card {v // g.IsAux v} ∧ 12 ≤ Fintype.card V ∧
+    (Nat.card {v // g.IsAux v} = 6 → ∃ e : g.G ≃g trident,
+      (∀ i, e (g.lit i) = TV.x i) ∧
+      e g.gT = TV.gT ∧ e g.gF = TV.gF ∧ e g.gB = TV.gB)
+\end{code}
+The first theorem says that the trident graph, with the literals $x_i$ and
+the three anchors, carries an action as in Definition~1 and is valid (the
+paper's Theorem~4). It has six auxiliary vertices, the $p_i$ and the $u_i$,
+and so twelve vertices in total. The second is Theorem~16. Let
+\lean{g} be a valid gadget on a finite vertex type \lean{V}, and let $k$ be
+the number of its auxiliary vertices, \lean{Nat.card \{v // g.IsAux v\}}.
+The theorem says that $k\ge6$ and that \lean{g} therefore has at least twelve
+vertices, the six fixed ones included. If $k=6$, there is a graph
+isomorphism \lean{e} from \lean{g.G} onto the trident that sends each literal
+to the corresponding literal and each anchor to the corresponding anchor.
+
+\paragraph{What a reader has to accept.} The seven definitions above (61 lines
+of \lean{Definition1.lean}), Mathlib's notions of simple graph, permutation,
+group homomorphism and graph isomorphism, and the trusted base of
+Section~\ref{sec:trust}. The engine's definitions of Section~\ref{sec:model}
+do not occur in the two theorems; they matter only for the intermediate
+statements.
+
+% ---------------------------------------------------------------------------
+\section{The candidate space of the search engine}\label{sec:model}
+
+The proof of \lean{minimum\_unique} passes through the candidate space of a
+search engine. This section describes that space and Section~\ref{sec:statements}
+the seven statements about it; they are intermediate results. As in
+Definition~1, every candidate contains the six fixed vertices with the
+palette triangle and the edges from $\GB$ to the literals. A candidate is
+determined by its auxiliary orbits and its other edges, and the search runs
+over these only.
+
+The engine's definitions are in four files of \lean{atlas/}:
+\lean{Atlas.lean}, \lean{Framework.lean}, \lean{Kits.lean} and
+\lean{Problems/ThreeColoring.lean}. The two labelings of the trident are in
+\lean{ProofsDecide.lean}. The definitions that only Statements~5--7 mention
+sit in the proof files next to the lemmas about them; examples are
+\lean{SpecExt}, \lean{rowInst}, \lean{S3} and \lean{LegalUniverse}.
+Statements~1--4 use 41 declarations, 257 lines of source; all seven
+statements use 60 declarations, 349 lines, three of them proofs that the
+definitions refer to. The README lists their line ranges.
+
+\subsection{Permutations}
+A permutation of $\{0,1,2\}$ is its value table $(s(0),s(1),s(2))$
+(\lean{Perm}). The list \lean{perms} holds the six tables,
+\lean{app s i} evaluates $s(i)$, \lean{compose s t} is $s\circ t$, and
+\lean{parity s} is $0$ for the three even permutations and $1$ otherwise.
+
+\subsection{Vertices, orbit types and the action}\label{sec:action}
+A vertex is either a literal \lean{.lit i} ($i<3$) or an auxiliary vertex
+\lean{.aux p j}, the $j$-th vertex of \emph{part} $p$. A \lean{Universe} is a
+list \lean{parts} of part sizes. Its vertex list is the three literals
+followed by the vertices of every part. A permutation $s$ acts by
+\lean{Universe.act}:
+\[
+\begin{array}{lll}
+x_i &\mapsto x_{s(i)}, & \\
+(p,j) &\mapsto (p,j) & \text{if part $p$ has size 1 (fixed vertex)},\\
+(p,j) &\mapsto (p,\ j\oplus \operatorname{parity}(s)) & \text{if size 2 (sign action)},\\
+(p,j) &\mapsto (p,\ s(j)) & \text{if size 3 (natural action)},\\
+(p,j) &\mapsto (p,\ \operatorname{index}(s\circ \pi_j)) & \text{otherwise (size 6: regular action)},
+\end{array}
+\]
+where $\pi_j$ is the $j$-th entry of \lean{perms}. These are, up to
+isomorphism, all transitive $S_3$-sets: the orbit of a point has size
+$6/|\mathrm{Stab}|\in\{1,2,3,6\}$, and for each size the action is
+determined by the stabilizer. These are the orbit types of the paper's
+Lemma~6, which Section~\ref{sec:lemma6} proves.
+
+\paragraph{Statement~6 checks this action.}
+For every list of part sizes in $\{1,2,3,6\}$, the action of the candidate
+universe fixes every vertex under the identity, satisfies
+$s\cdot(t\cdot v)=(s\circ t)\cdot v$, maps the vertex list into itself, sends
+$x_i$ to $x_{s(i)}$, and fixes the three anchors
+(\lean{candidate\_action\_is\_s3\_action}). The statement also says that a
+Mathlib \lean{MulAction} of the group \lean{S3}, the engine's table of six
+permutations with \lean{compose} as multiplication, has this action as its
+scalar multiplication (\lean{Meaning.attach\_mulAction}), and that every edge
+orbit has size 1, 2, 3 or 6 (\lean{Meaning.attach\_edgeOrbit\_length}, by the
+orbit--stabilizer theorem).
+
+\subsection{The candidate space}
+\lean{threeColoring.attach parts} returns the universe with parts
+\lean{parts ++ [1, 1, 1]}: the three appended singleton parts are the anchors
+$\GT,\GF,\GB$ (vertices \lean{.aux n 0}, \lean{.aux (n+1) 0},
+\lean{.aux (n+2) 0} for $n=$ \lean{parts.length}). It also returns the
+\emph{forced edges}: the palette triangle and the three edges from $\GB$ to
+the literals.
+
+\lean{Universe.edges} lists every unordered pair of distinct vertices except
+literal--literal pairs, each in a normal form (\lean{normEdge}). This
+includes pairs between a literal and $\GT$ or $\GF$, so the candidate space
+is larger than the paper's standing assumption after Definition~1 requires.
+For each of the 24 compositions in the paper's Table~1 it has four times as
+many candidates as the table lists, for example $2^{16}$ for \lean{[3, 3]}
+where the table has $2^{14}$: the paper's enumeration leaves out the two
+edge orbits between the literals and $\GT$ or $\GF$.
+\lean{actEdge s e} applies $s$ to both ends and normalizes.
+
+A \emph{symmetric candidate} of composition \lean{parts} is an edge list
+\lean{g} with
+\begin{code}
+abbrev SymCandidate (parts : List Nat) (g : List Edge) : Prop :=
+  (∀ e ∈ g, e ∈ (threeColoring.attach parts).1.edges) ∧
+  (∀ s ∈ perms, ∀ e ∈ g, (threeColoring.attach parts).1.actEdge s e ∈ g) ∧
+  (∀ f ∈ (threeColoring.attach parts).2, normEdge f ∈ g)
+\end{code}
+that is, a graph on the universe with no literal--literal edge, invariant
+under the action, and containing the palette triangle and the $\GB$ fan.
+
+\subsection{Orbit compositions}\label{sec:comp}
+\lean{compositions k [1, 2, 3, 6]} enumerates the lists of part sizes of $k$
+auxiliary vertices. \textbf{Statement~5} (\lean{compositions\_are\_all\_orbit\_compositions})
+says that it lists exactly the non-decreasing lists over $\{1,2,3,6\}$ that
+sum to $k$. Nothing is missing, so ``for every composition in the list''
+means ``for every orbit composition''. The order of the parts is no
+restriction, since parts are labels.
+
+\subsection{The judge}\label{sec:judge}
+An \emph{input} is a number $\mathit{env}<8$ whose bit $i$ says whether
+$x_i$ is true. Input $\mathit{env}$ satisfies $C$ iff $\mathit{env}\neq 0$.
+For an input, \lean{rowInst parts g env} pins the anchors to the colors
+$0,1,2$ (read $\T,\F,\B$), the true literals to $0$ and the false literals to
+$1$; \lean{colorsOk} runs the backtracking 3-coloring test \lean{colorable}
+on it.
+
+\textbf{Statement~7} (\lean{gadgetK\_is\_validity}) says
+\begin{code}
+gadgetK threeColoring parts g false = some b ↔
+  b = 1 ∧ ∀ env, env < 8 → (colorsOk (rowInst parts g env) = true ↔ env ≠ 0)
+\end{code}
+and \lean{Meaning.colorsOk\_rowInst\_iff} says that, for a graph \lean{g}
+inside the candidate space,
+\lean{colorsOk (rowInst parts g env) = true} holds iff there is a coloring
+$f$ of the vertices with values in $\{0,1,2\}$ that agrees with every pin and
+gives adjacent vertices different colors (the predicate \lean{SpecExt}).
+Together: \lean{gadgetK threeColoring parts g false = some 1} holds exactly
+when \lean{g} is a valid clause gadget in the sense of Definition~1, judged
+on all eight inputs. The argument \lean{false} selects these eight rows;
+with \lean{true} the judge uses only the four inputs $0,1,3,7$ (one per
+number of true literals), which Section~\ref{sec:symred} shows to be
+equivalent on symmetric candidates.
+
+\subsection{The trident in the candidate space}
+With \lean{parts = [3, 3]} the vertices are the literals, the parts
+$(0,j)$ and $(1,j)$, and the anchors $\GT=(2,0)$, $\GF=(3,0)$, $\GB=(4,0)$.
+\lean{tridentA} (\lean{ProofsDecide.lean}) is the trident with branch
+vertices $p_j=(0,j)$ and upper triangle $u_j=(1,j)$: the triangle on part 1,
+the edges $p_j u_j$, $x_j p_j$ and $p_j\GT$, the $\GB$ fan and the palette
+triangle, 18 edges. \lean{tridentB} is the same graph with the roles of the
+two parts exchanged.
+
+% ---------------------------------------------------------------------------
+\section{The seven statements}\label{sec:statements}
+
+\lean{atlas/Statement.lean} restates the results about the candidate space;
+\lean{lake build} checks them and prints their axioms.
+\begin{enumerate}
+\item \lean{trident\_is\_symmetric\_candidate}: \lean{SymCandidate [3, 3] tridentA}.
+\item \lean{trident\_is\_valid}: \lean{gadgetK threeColoring [3, 3] tridentA false = some 1}.
+\item \lean{no\_valid\_symmetric\_gadget\_below\_six\_auxiliary\_vertices}: for every
+$k\le5$, every composition of $k$ and every symmetric candidate \lean{g},
+\lean{gadgetK threeColoring parts g false = none}.
+\item \lean{valid\_symmetric\_gadget\_up\_to\_six\_auxiliary\_vertices\_is\_trident}: for
+every $k\le6$, composition and symmetric candidate \lean{g}, if
+\lean{gadgetK} returns \lean{some b}, then \lean{parts = [3, 3]}, $b=1$, and
+\lean{g} has the edge set of \lean{tridentA} or of \lean{tridentB}.
+\item \lean{compositions\_are\_all\_orbit\_compositions} (Section~\ref{sec:comp}).
+\item \lean{candidate\_action\_is\_s3\_action} (Section~\ref{sec:action}).
+\item \lean{gadgetK\_is\_validity} (Section~\ref{sec:judge}).
+\end{enumerate}
+Read with Statements~5--7, Statements~3 and~4 say: among the $S_3$-symmetric
+candidates with at most six auxiliary vertices (at most twelve vertices in
+all), the only valid clause gadgets are the two labelings of the trident;
+Statements~1 and~2 say that the trident is one. This is Theorem~16 in the
+candidate space. Statement~3 follows from Statement~4 (the composition
+\lean{[3, 3]} sums to six), and Statement~4 is \lean{trident\_minimum\_unique}.
+Section~\ref{sec:def1} derives \lean{minimum\_unique} from Statements~3, 4, 5
+and~7, and Section~\ref{sec:proof} proves Statement~4.
+
+% ---------------------------------------------------------------------------
+\section{From Definition 1 to the candidate space}\label{sec:def1}
+
+Let $g$ be a gadget of Definition~1 on a finite vertex set. This section
+turns $g$ into a symmetric candidate, shows that a valid gadget passes the
+judge, and derives \lean{minimum\_unique} from Statements~3, 4, 5 and~7.
+
+\subsection{Lemma 6: the orbit structure}\label{sec:lemma6}
+\lean{atlas/OrbitStructure.lean} proves the orbit types of the paper's
+Lemma~6 with Mathlib only. The group $S_3$ is \lean{Equiv.Perm (Fin 3)}.
+
+\begin{fact}[\lean{orbit\_structure}]
+Let $S_3$ act on a set and let $a$ be a point. Then one of the following
+holds.
+\begin{enumerate}
+\item The orbit of $a$ has size 1: every permutation fixes $a$.
+\item The orbit has size 2: a permutation fixes $a$ exactly when it is even
+(sign action).
+\item The orbit has size 3: for some index $k$, a permutation fixes $a$
+exactly when it fixes $k$ (natural action).
+\item The orbit has size 6: only the identity fixes $a$ (free orbit).
+\end{enumerate}
+\end{fact}
+
+The proof follows the paper. By Lagrange's theorem the stabilizer $H$ of $a$
+has order 6, 3, 2 or 1, and \lean{subgroup\_cases} identifies $H$ in each
+case.
+\begin{itemize}
+\item Order 6: $H=S_3$.
+\item Order 3: $H$ has index 2, and the alternating group is the only
+subgroup of index 2 (Mathlib's
+\lean{Equiv.Perm.eq\_alternatingGroup\_of\_index\_eq\_two}).
+\item Order 2: $H=\{1,\tau\}$ for an involution $\tau$. An involution of three
+points fixes a point $k$: if $\tau(0)\neq 0$, then $\tau$ exchanges $0$ and
+$\tau(0)$ and fixes the third point (\lean{exists\_fixed\_of\_sq\_eq\_one}).
+The stabilizer of $k$ under the natural action has two elements by the
+orbit--stabilizer theorem, so it equals $H$.
+\item Order 1: $H$ is trivial.
+\end{itemize}
+The orbit--stabilizer theorem
+(\lean{MulAction.orbitProdStabilizerEquivGroup}) gives the orbit size
+$6/|H|$.
+
+The stabilizer determines the action on the orbit, since $\sigma a=\tau a$
+exactly when $\tau^{-1}\sigma\in H$. The four cases are therefore the fixed
+vertex, the sign action, the natural action and the free orbit of Lemma~6.
+The paper's Lemma~6 also describes the subgraph induced on an orbit of size 3
+and the literal attachments. The formal proof does not use these parts,
+because the search covers every invariant edge set.
+
+\subsection{Labels}\label{sec:labels}
+\lean{exists\_orbit\_labeling}: if a function $f$ on the group satisfies
+$\sigma a=\tau a \iff f(\sigma)=f(\tau)$, then $\sigma a\mapsto f(\sigma)$ is
+a well-defined injective function on the orbit of $a$.
+\lean{atlas/OrbitLabels.lean} applies this in the four cases with
+$f(\sigma)=0$, the parity of $\sigma$, $\sigma(k)$, and the index of $\sigma$
+in the list \lean{perms}.
+
+\begin{fact}[\lean{exists\_engine\_labeling}]
+Every orbit of an $S_3$ action has a size $n\in\{1,2,3,6\}$ and an injective
+labeling by numbers below $n$ such that the label of $\sigma x$ is
+\lean{stdAct n s j}, where $s$ is the value table of $\sigma$, $j$ is the
+label of $x$, and \lean{stdAct} is the engine's formula of
+Section~\ref{sec:action}.
+\end{fact}
+
+The value table is \lean{toTable σ}${}=(\sigma(0),\sigma(1),\sigma(2))$, and
+\lean{toTable\_mul} proves that the engine's \lean{compose} is the composition
+of permutations. Four facts about the engine's hand-written tables are checked
+by evaluation over the six permutations (Section~\ref{sec:trust}).
+
+\subsection{The candidate of a gadget}
+(\lean{atlas/Candidate.lean}.) The group $S_3$ acts on the auxiliary vertices
+of $g$ through $\rho$ (\lean{auxAction}): an automorphism $\rho(\sigma)$
+permutes the literals and fixes the anchors, so it maps auxiliary vertices to
+auxiliary vertices. The orbits are listed in non-decreasing order of size,
+and \lean{g.parts} is the list of their sizes. Its entries lie in
+$\{1,2,3,6\}$, it is sorted, and it sums to the number of auxiliary vertices,
+because the orbits partition them (\lean{parts\_legal}, \lean{parts\_sorted},
+\lean{parts\_sum}). By Statement~5 it is one of the engine's compositions
+(\lean{parts\_mem\_compositions} in \lean{Theorem16.lean}).
+
+\lean{g.toVertex} sends literal $i$ to \lean{.lit i}, an auxiliary vertex to
+\lean{.aux p j} with $p$ the position of its orbit and $j$ its label, and the
+anchors $\GT,\GF,\GB$ to the three parts after the auxiliary ones. It is
+injective (\lean{toVertex\_injective}), its values are vertices of the
+candidate universe (\lean{toVertex\_mem}), and it turns $\rho(\sigma)$ into
+the engine's action by the table of $\sigma$ (\lean{toVertex\_map}).
+
+\subsection{The graph}
+(\lean{atlas/CandidateGraph.lean}.) \lean{g.edgeList} holds the normalized
+pair \lean{(g.toVertex u, g.toVertex v)} for every edge $uv$ of $g$. Two
+vertices are adjacent in $g$ exactly when their normalized pair is in the
+list (\lean{adj\_iff}). The list is a symmetric candidate of composition
+\lean{g.parts} (\lean{symCandidate}):
+\begin{itemize}
+\item it lies in the candidate space, because the ends of an edge are
+different vertices and are not both literals;
+\item it is invariant, because every table in \lean{perms} is the table of
+some $\sigma$, $\rho(\sigma)$ is an automorphism, and \lean{toVertex} is
+equivariant;
+\item it contains the forced edges, which are the palette triangle and the
+edges from $\GB$ to the literals.
+\end{itemize}
+
+\subsection{Validity}\label{sec:valid}
+(\lean{atlas/CandidateValid.lean}.) For an input $\mathit{env}<8$ let
+$\alpha_{\mathit{env}}(i)$ be bit $i$ of $\mathit{env}$ (\lean{envInput}).
+The pins of the row $\mathit{env}$ are the anchor colors $\T,\F,\B$ and the
+literal colors given by $\alpha_{\mathit{env}}$ (\lean{rowPins\_mem}).
+
+\begin{fact}[\lean{specExt\_iff\_extends}]
+A coloring of the candidate that satisfies \lean{SpecExt} for the row
+$\mathit{env}$ exists exactly when \lean{g.Extends} holds for
+$\alpha_{\mathit{env}}$.
+\end{fact}
+
+A coloring of the candidate gives a coloring of $g$ by composition with
+\lean{toVertex}. A coloring of $g$ gives a coloring of the candidate by
+transport along \lean{toVertex}, with color 0 outside the image. With
+Statement~7 and \lean{colorable\_iff\_spec} (Section~\ref{sec:color}) this
+yields \lean{gadgetK\_of\_valid}: for a valid $g$,
+\lean{gadgetK threeColoring g.parts g.edgeList false = some 1}. The proof
+also uses that an input below 8 has a true literal exactly when it is not 0.
+
+\subsection{Conclusion}\label{sec:conclusion}
+(\lean{atlas/Theorem16.lean}.) Let $k$ be the number of auxiliary vertices
+of $g$. The number of all vertices is $k+6$ (\lean{card\_eq}).
+
+If $k\le5$, Statement~3 would say that the judge returns \lean{none} on the
+candidate of $g$, against \lean{gadgetK\_of\_valid}. So $k\ge6$, and $g$ has
+at least twelve vertices.
+
+If $k=6$, Statement~4 says that
+\lean{g.parts = [3, 3]} and that \lean{g.edgeList} has the edge set of
+\lean{tridentA} or of \lean{tridentB}. For each labeling an explicit map from
+the twelve vertices of the candidate space to \lean{TV} is injective and
+matches the edge list with the trident graph of Section~\ref{sec:statement}
+pair by pair (\lean{toTVA\_adj}, \lean{toTVB\_adj}; checked by evaluation).
+Composed with \lean{toVertex} it is a bijection from the twelve vertices of
+$g$ to \lean{TV} that preserves adjacency in both directions and sends the literals
+and the anchors to their counterparts (\lean{iso\_of\_map}). In particular
+the two labelings are the same graph.
+
+\subsection{The trident is valid}\label{sec:tridentvalid}
+(\lean{atlas/TridentGadget.lean}; Mathlib only.) A permutation acts on
+\lean{TV} by permuting the indices of $x_i$, $p_i$ and $u_i$. This preserves
+\lean{tridentEdge}, so it gives the action $\rho$ of Definition~1
+(\lean{tridentGadget}). The auxiliary vertices are the six vertices $p_i$
+and $u_i$ (\lean{tridentGadget\_card\_aux}). Validity is the paper's
+Theorem~4. If all literals
+are false, each $p_i$ is adjacent to $x_i$, which has color $\F$, and to
+$\GT$, so $p_i$ has color $\B$; then no $u_i$ has color $\B$, and the
+triangle $u_0u_1u_2$ cannot be colored with two colors. If literal $i_0$ is
+true, color $p_{i_0}$ with $\F$, $u_{i_0}$ with $\B$, every other $p_i$ with
+$\B$, and the other two $u_i$ with $\T$ and $\F$.
+\lean{tridentColoring\_proper} checks by evaluation that this coloring is
+proper for every input.
+
+% ---------------------------------------------------------------------------
+\section{The proof of \lean{trident\_minimum\_unique}}\label{sec:proof}
+
+Every declaration written in the source is used by one of the results; the
+dependency check of Section~\ref{sec:checks} confirms it.
+The proof of \lean{trident\_minimum\_unique} uses 278 declarations. It has
+the following backbone: every dependency path from
+\lean{trident\_minimum\_unique} to a declaration below a node passes through
+that node (the dominator tree of its dependency graph; the numbers count the
+declarations each node dominates, itself included).
+
+\begin{code}
+trident_minimum_unique (278)                   ProofsTheorem16
+├─ gadgetK_s3_symmetry_reduction_threeColoring (51)  ProofsSym   §6.3
+│    └─ colorsOk_row_act (38)
+│         └─ colorable_rename (7)
+├─ gadgetK_none_of_small_orbits (12)           ProofsSmallOrbits §6.1
+├─ exists_graph_of_invariant (12)              ProofsCover       §6.4
+├─ colorable_iff_spec (11)                     ProofsColor       §7
+├─ threeColoring_kill (8)                      ProofsWalk        §6.2
+│    └─ colorsOk_antitone (6)                  ProofsPrune
+└─ trident_unique_threeColoring_invariant (5)  ProofsCover       §6.5
+\end{code}
+
+\paragraph{Case split.} \lean{trident\_minimum\_unique} fixes $k\le6$ and
+rewrites \lean{compositions k [1, 2, 3, 6]} into its explicit value for each
+$k$ (by \lean{simp}); the 24 compositions are then closed one by one:
+
+\begin{center}
+\begin{tabular}{@{}p{0.34\textwidth}p{0.3\textwidth}p{0.28\textwidth}@{}}
+\toprule
+compositions & argument & re-run\\
+\midrule
+sizes 1 and 2 only (16 compositions) & \lean{gadgetK\_none\_of\_small\_orbits} & none\\
+\lean{[3]} & empty sweep & \lean{sym\_empty\_3} (kernel)\\
+\lean{[1,3]}, \lean{[2,3]}, \lean{[1,1,3]}, \lean{[6]}, \lean{[1,2,3]}, \lean{[1,1,1,3]} & empty sweep & \lean{sym\_empty\_*} (compiled)\\
+\lean{[3,3]} & the trident slice & \lean{trident\_slice\_found} (compiled)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Compositions of sizes 1 and 2}\label{sec:small}
+\lean{gadgetK\_none\_of\_small\_orbits} (\lean{ProofsSmallOrbits.lean})
+proves, for any number of auxiliary vertices, that no symmetric candidate
+whose parts all have size 1 or 2 is valid. Let $c=(1,2,0)$, the 3-cycle
+$x_0\mapsto x_1\mapsto x_2\mapsto x_0$. It is even, so it fixes every vertex
+of a part of size 1 or 2 and every anchor (\lean{act\_cyc\_aux}). If $w$ is
+adjacent to $x_2$, then $w$ is not a literal, so $c$ fixes $w$, and invariance
+maps the edge $x_2w$ to $x_0w$: every neighbor of $x_2$ is a neighbor of $x_0$
+(\lean{adj\_lit\_two\_to\_zero}). Take a proper coloring for the satisfying
+input $(\F,\F,\T)$ (bit $2$ set, $\mathit{env}=4$) and recolor $x_2$ with
+$\F$. Each neighbor of $x_2$ is adjacent to $x_0$, which has color $\F$, so
+it avoids $\F$, and the result is a proper coloring for $(\F,\F,\F)$
+(\lean{colorsOk\_row\_four\_imp\_zero}, through the reflection of
+Section~\ref{sec:color}). The gadget accepts an unsatisfying input, and the
+judge returns \lean{none}. This is the special case of the paper's Lemma~11
+that the minimality proof needs.
+
+\subsection{The search and its completeness}\label{sec:search}
+\lean{searchSlice threeColoring parts true} searches the symmetric
+candidates of a composition. \lean{splitForced} divides the edge orbits
+(\lean{Universe.orbits}) into the \emph{base}, the orbits that contain a
+forced edge, and the \emph{free} orbits. \lean{searchAux} walks the subsets
+of the free orbits depth first, adds each chosen orbit to the base, judges
+each leaf that it reaches with the four-input table, and collects the valid
+leaves in \lean{found}. While at least \lean{pruneDepth}${}=8$ free orbits
+remain undecided, it skips a subtree when some satisfiable input is already
+uncolorable on the partial graph. So the search does not visit every
+candidate. The two facts below show that it finds every valid one.
+
+\begin{fact}[pruning loses nothing]
+\lean{colorsOk} is antitone in the edge list (\lean{colorsOk\_antitone},
+from \lean{colorableGoK\_antitone}): removing edges never destroys a proper
+coloring. A completion only adds edges, so a satisfiable row that has died
+stays dead, and a graph with a dead satisfiable row is rejected
+(\lean{commonK\_none\_3col}). Hence \lean{threeColoring\_kill} discharges the
+hypothesis of \lean{searchAux\_complete}: every subset of free orbits whose
+graph passes the judge is reported.
+\end{fact}
+
+\begin{fact}[the branches of the walk are the universe's graphs]
+The leaf graph of a branch (\lean{walkGraph}) is a permutation of the list
+\lean{graphAt base free mask} that \lean{Universe.graphs} produces
+(\lean{walkGraph\_perm\_graphAt}), and the judge depends on the edge list
+only up to permutation (\lean{checkGadget\_perm\_3col}). So an empty
+\lean{found} list means that the judge rejects every graph in
+\lean{Universe.graphs}
+(\lean{searchSlice\_exhaustive\_threeColoring\_graphs}).
+\end{fact}
+
+\subsection{Four inputs suffice for symmetric candidates}\label{sec:symred}
+\lean{gadgetK\_s3\_symmetry\_reduction\_threeColoring}
+(\lean{ProofsSym.lean}) proves that, on every symmetric candidate, the
+four-input judge and the eight-input judge agree. Let $s$ act on inputs by
+permuting bits (\lean{envAct}). For an invariant graph, the row of
+$s\cdot\mathit{env}$ is the image of the row of $\mathit{env}$ under the
+graph automorphism $v\mapsto s\cdot v$: the action maps the edge list onto
+itself (\lean{map\_actEdge\_mem}), the vertex list onto itself, and the pins
+of $\mathit{env}$ onto those of $s\cdot\mathit{env}$ (the anchors are fixed,
+the literals are permuted with their truth values; \lean{rowPins\_colorAt}).
+Renaming a 3-coloring instance by an injective map does not change its answer
+(\lean{colorable\_rename}). Hence \lean{colorsOk\_row\_act}: the two rows have
+the same answer. Every input is $s\cdot r$ for a representative
+$r\in\{0,1,3,7\}$ (\lean{exists\_class\_rep}), and the judge's verdict
+depends on its rows only through this correspondence
+(\lean{commonK\_eq\_of\_quotient}). This is the reduction of the paper's
+Section~IV-D that tests one input per class.
+
+\subsection{Every symmetric candidate is a graph of the universe}\label{sec:cover}
+\lean{exists\_graph\_of\_invariant} (\lean{ProofsCover.lean}): every
+invariant graph inside the edge list that contains the forced edges has the
+same edge set as some graph of \lean{Universe.graphs}. Every edge lies in an
+emitted orbit (\lean{orbits\_cover}), the action is transitive inside an
+orbit (\lean{mem\_orbit\_trans}), so an invariant graph is a union of
+orbits; the orbits containing a forced edge are in the base, and the others
+are selected by some mask (\lean{exists\_bitSubset}). The judge depends on a
+loop-free graph only through its edge set (\lean{gadgetK\_congr\_3col}), so
+\lean{searchSlice\_symmetric\_covers\_invariant} follows: if the sweep of a
+composition is empty, the eight-input judge rejects every symmetric
+candidate of that composition.
+
+\subsection{The trident slice}\label{sec:slice}
+\lean{trident\_slice\_found} states that the sweep of \lean{[3, 3]} finds
+exactly \lean{[(tridentA, 1), (tridentB, 1)]}. With the facts above,
+\lean{trident\_unique\_threeColoring\_invariant} gives: if the judge returns
+\lean{some b} on a symmetric candidate of \lean{[3, 3]}, then $b=1$ and its
+edge set is that of \lean{tridentA} or \lean{tridentB}.
+
+\subsection{Statements 1--3}
+Statements~1 and~2 are closed by \lean{decide}, which the kernel evaluates
+(standard axioms only). Statement~3 is \lean{no\_symmetric\_gadget\_below\_six}:
+a valid candidate with $k\le5$ would have \lean{parts = [3, 3]} by Statement~4,
+whose sizes sum to $6$, a contradiction (\lean{compositions\_sound}).
+
+\subsection{Correspondence with the paper}
+The proof in the candidate space does not follow the lemma chain of the
+paper's Sections~IV-A to~IV-C. Its two proved reductions are general (Sections~\ref{sec:small}
+and~\ref{sec:symred}); everything else is settled by exhaustive search,
+whose correctness is proved (Sections~\ref{sec:search} and~\ref{sec:cover})
+and whose runs are re-done at build time. The paper's own enumeration
+(Section~IV-D, Table~1) reports the same 24 compositions.
+
+% ---------------------------------------------------------------------------
+\section{The coloring test is correct}\label{sec:color}
+Every verdict rests on \lean{colorable}, a backtracking search
+(\lean{colorableGo}): it takes the vertices in order, tries the pinned color
+or each of $0,1,2$, rejects a color used by an already colored neighbor, and
+recurses. \lean{colorable\_iff\_spec} (\lean{ProofsColor.lean}) proves that it
+returns \lean{true} exactly when a pin-respecting proper coloring exists
+(\lean{SpecExt}), for loop-free graphs and duplicate-free vertex lists (both
+hold for candidates: \lean{edges\_ne}, \lean{vertices\_nodup}). Soundness
+reads the coloring off a successful run; completeness shows by induction on
+the remaining vertices that a run following a given proper coloring is never
+rejected. Both are proved once for $k$ colors (\lean{colorableGoK\_sound},
+\lean{colorableGoK\_complete}) and instantiated at $k=3$.
+
+% ---------------------------------------------------------------------------
+\section{Trusted base}\label{sec:trust}
+\begin{itemize}
+\item \textbf{Lean's kernel} and the three standard axioms \lean{propext},
+\lean{Classical.choice}, \lean{Quot.sound}.
+\item \textbf{Mathlib} (v4.33.0): simple graphs, permutations, Lagrange's
+theorem, the orbit--stabilizer theorem and the alternating group
+(Sections~\ref{sec:statement} and~\ref{sec:def1}), list lemmas, and tactics
+such as \lean{interval\_cases} and \lean{omega}.
+\item \textbf{The compiler, for seven re-runs.} \lean{native\_decide}
+evaluates a Boolean by compiled code; Lean records each use as an auxiliary
+axiom \lean{<theorem>.\_native.native\_decide.ax\_1\_1}. The seven are
+\lean{sym\_empty\_13}, \lean{\_23}, \lean{\_113}, \lean{\_6}, \lean{\_123},
+\lean{\_1113} (2\textsuperscript{12} to 2\textsuperscript{26} candidates) and
+\lean{trident\_slice\_found} (2\textsuperscript{16}); the kernel evaluator is
+impractical beyond about 2\textsuperscript{13} candidates on this engine.
+Statements~3 and~4 depend on them, and \lean{minimum\_unique} depends on
+them through Statements~3 and~4. Statements~1, 2 and 5--7 and
+\lean{trident\_is\_valid\_gadget} do not.
+\item \textbf{Checks of data by evaluation.} The files of
+Section~\ref{sec:def1} use \lean{decide}, which the kernel evaluates
+(standard axioms only), for the following checks of concrete data. None of
+them replaces an argument of the paper.
+\begin{itemize}
+\item The engine's tables of the six permutations: \lean{perms} lists exactly
+their value tables (\lean{toTable\_mem}, \lean{toTable\_surj}), \lean{parity}
+is 0 on the even ones and 1 on the odd ones (\lean{parity\_toTable}), and
+\lean{pidx} is an index below 6 (\lean{pidx\_lt}).
+\item The encoding of inputs: an input below 8 has a set bit exactly when it
+is not 0 (\lean{envInput\_some\_true}).
+\item The trident: the edge lists \lean{tridentA} and \lean{tridentB} are the
+trident graph (\lean{toTVA\_inj}, \lean{toTVA\_adj}, \lean{toTVB\_inj},
+\lean{toTVB\_adj}), the colorings of Section~\ref{sec:tridentvalid} are proper
+(\lean{tridentColoring\_proper}), and \lean{TV} has twelve elements, six of
+them auxiliary (\lean{card\_TV}, \lean{tridentGadget\_card\_aux}).
+\item Four facts about three points or three colors inside
+\lean{exists\_fixed\_of\_sq\_eq\_one} and \lean{tridentGadget\_valid}, for
+example that three distinct elements of a three-element set are all of its
+elements.
+\item The inequality $0<3$ in the definition of \lean{idx}
+(\lean{Theorem16.lean}).
+\end{itemize}
+\end{itemize}
+\input{axioms.tex}
+
+% ---------------------------------------------------------------------------
+\section{What is not formalized}\label{sec:gaps}
+\begin{enumerate}
+\item \textbf{The paper's own proof of Theorem~16.} The formal proof does
+not follow the lemma chain of the paper's Sections~IV-A to~IV-C. From
+Section~IV it formalizes the orbit types of Lemma~6
+(Section~\ref{sec:lemma6}), the special case of Lemma~11 for orbits of sizes
+1 and 2 (Section~\ref{sec:small}), the four-input reduction
+(Section~\ref{sec:symred}) and, for its own engine, that pruning loses no
+valid candidate (Section~\ref{sec:search}). Everything else is settled by
+the exhaustive search in the candidate space.
+\item \textbf{The rest of Lemma~6.} Its statements about the subgraph induced
+on an orbit of size 3 and about literal attachments are not formalized. The
+proof does not need them.
+\item \textbf{The remark after Theorem~16.} The paper adds that the
+isomorphism onto the trident is unique and therefore commutes with the two
+$S_3$-actions. \lean{minimum\_unique} gives the existence of the isomorphism
+only.
+\item \textbf{The search counts.} The numbers of candidates and leaves in
+the paper's Table~1 come from the separate enumeration program; the package
+does not prove them.
+\item \textbf{The other results of the paper.} The package covers Theorem~16
+and Theorem~4 only.
+\end{enumerate}
+The first three items are formalized in the package
+\lean{paper-proof-and-search-trident\_minimum\_unique} of the same
+repository. It proves the same two theorems by the paper's own argument,
+without a search and without compiled code.
+
+% ---------------------------------------------------------------------------
+\section{Checks}\label{sec:checks}
+\input{checks.tex}
+
+\appendix
+\section{Files}
+\input{files.tex}
+
+\end{document}

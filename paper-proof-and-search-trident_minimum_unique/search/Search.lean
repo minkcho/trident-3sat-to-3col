@@ -2,19 +2,19 @@ import search.ProofsCover
 import search.Space
 
 /-!
-  The search procedure visits every candidate and reports only candidates.
+  The search procedure finds every valid candidate and reports only valid ones.
 
   `searchSlice threeColoring parts true` is the search over one orbit
-  composition. It walks all subsets of the free edge orbits, depth first,
-  prunes a subtree as soon as a satisfiable row has become uncolorable, and
-  lists in `found` the graphs that pass the check on the four input classes.
+  composition. It walks the subsets of the free edge orbits depth first. It
+  may skip a subtree in which a satisfiable row has become uncolorable, and
+  it lists in `found` the graphs that pass the check on four input classes.
 
   * `searchSlice_complete`: every S3-symmetric candidate that passes the
     judge is found. The list `found` contains a graph with the same edge
-    set. The walk enumerates every subset of the free orbits
-    (`searchAux_complete`), pruning loses nothing because adding edges never
-    makes an uncolorable row colorable (`threeColoring_kill`), every
-    S3-invariant graph is a union of orbits (`exists_graph_of_invariant`),
+    set. The walk reports every subset of the free orbits whose graph passes
+    the check (`searchAux_complete`), pruning loses nothing because adding
+    edges never makes an uncolorable row colorable (`threeColoring_kill`),
+    every S3-invariant graph is a union of orbits (`exists_graph_of_invariant`),
     and for an invariant graph the four input classes decide the eight
     inputs (`gadgetK_s3_symmetry_reduction_threeColoring`).
   * `searchSlice_sound`: every found graph is an S3-symmetric candidate

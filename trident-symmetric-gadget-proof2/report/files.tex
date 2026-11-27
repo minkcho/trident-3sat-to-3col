@@ -1,0 +1,46 @@
+% Files of atlas/ with line counts (2026-11-27).
+\begin{center}
+\small\begin{tabular}{@{}lrp{0.5\textwidth}@{}}
+\toprule
+file & lines & content\\
+\midrule
+\lean{Definition1.lean} & 97 & Definition~1 and the trident graph (Section~\ref{sec:statement}; Mathlib only)\\
+\lean{Theorem16.lean} & 270 & \lean{minimum\_unique} and \lean{trident\_is\_valid\_gadget} (Section~\ref{sec:conclusion})\\
+\lean{TridentGadget.lean} & 145 & the trident is a valid gadget (Section~\ref{sec:tridentvalid}; Mathlib only)\\
+\lean{OrbitStructure.lean} & 177 & the orbit types of Lemma~6 (Section~\ref{sec:lemma6}; Mathlib only)\\
+\lean{OrbitLabels.lean} & 177 & permutations and the engine's tables, labels (Section~\ref{sec:labels})\\
+\lean{Candidate.lean} & 385 & the orbit composition and the vertex map of a gadget\\
+\lean{CandidateGraph.lean} & 156 & the edge list of a gadget is a symmetric candidate\\
+\lean{CandidateValid.lean} & 179 & a valid gadget passes the judge (Section~\ref{sec:valid})\\
+\midrule
+\lean{Statement.lean} & 141 & the seven statements about the candidate space\\
+\lean{Meaning.lean} & 160 & proofs of Statements 5--7\\
+\lean{Atlas.lean} & 177 & permutations, vertices, universes, the action, edges, orbits, compositions\\
+\lean{Framework.lean} & 197 & instances, the problem interface, the judge \lean{gadgetK}, the pruned search\\
+\lean{Kits.lean} & 37 & the feasibility kit\\
+\lean{Problems/KColoring.lean} & 28 & the backtracking coloring kernel for $k$ colors\\
+\lean{Problems/ThreeColoring.lean} & 60 & 3-coloring as a problem: the test and the palette\\
+\lean{Proofs.lean} & 168 & the composition enumeration is sound and complete\\
+\lean{ProofsLib.lean} & 37 & list lemmas\\
+\lean{ProofsAction.lean} & 698 & the action laws, the edge algebra, the orbit generator\\
+\lean{ProofsOrbit.lean} & 167 & S3 as a Mathlib group, the \lean{MulAction}s, orbit sizes\\
+\lean{ProofsColorK.lean} & 323 & the $k$-coloring kernel: reflection and antitonicity\\
+\lean{ProofsColor.lean} & 166 & \lean{colorable\_iff\_spec} (Section~\ref{sec:color})\\
+\lean{ProofsPrune.lean} & 44 & pruning soundness\\
+\lean{ProofsKits.lean} & 56 & the mask enumeration \lean{bitSubset}\\
+\lean{ProofsWalk.lean} & 238 & the search walk and its completeness (Section~\ref{sec:search})\\
+\lean{ProofsWalkBridge.lean} & 271 & the branches of the walk are the universe's graphs\\
+\lean{ProofsSym.lean} & 1121 & four inputs suffice (Section~\ref{sec:symred})\\
+\lean{ProofsSmallOrbits.lean} & 257 & orbits of sizes 1 and 2 (Section~\ref{sec:small})\\
+\lean{ProofsCover.lean} & 202 & every symmetric candidate is a graph of the universe (Section~\ref{sec:cover})\\
+\lean{ProofsDecide.lean} & 160 & \lean{sym\_empty\_3}, the trident slice, \lean{tridentA}, \lean{tridentB}\\
+\lean{ProofsSweeps16.lean} & 42 & the six compiled empty sweeps\\
+\lean{ProofsTheorem16.lean} & 132 & \lean{trident\_minimum\_unique}\\
+\midrule
+total & 6468 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+The first eight files prove the results for Definition~1; the others are the
+candidate-space part. Outside \lean{atlas/}: \lean{checks/ProofCone.lean} (the
+dependency check of Section~\ref{sec:checks}) and this report (\lean{report/}).

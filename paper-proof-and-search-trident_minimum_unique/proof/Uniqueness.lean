@@ -150,3 +150,11 @@ theorem iso_of_literal_set (g : Gadget V) (e : g.G ≃g trident) (π : Equiv.Per
     rw [(g.ρ_anchor π⁻¹).2.2, hB]
 
 end Def1
+
+-- The build fails if this result depends on an axiom other than the three
+-- standard ones.
+/--
+info: 'Def1.iso_of_literal_set' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Def1.iso_of_literal_set

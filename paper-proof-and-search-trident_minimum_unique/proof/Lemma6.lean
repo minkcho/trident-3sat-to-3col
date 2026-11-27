@@ -349,3 +349,11 @@ theorem lemma6 (g : Gadget V) {v : V} (hv : g.IsAux v) :
 end Gadget
 
 end Def1
+
+-- The build fails if this result depends on an axiom other than the three
+-- standard ones.
+/--
+info: 'Def1.Gadget.lemma6' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Def1.Gadget.lemma6

@@ -2,19 +2,19 @@ import search.CandidateTrident
 import search.Search
 
 /-!
-  # The search of Section IV-D, tied to Definition 1 and to Theorem 16
+  # The exhaustive search, tied to Definition 1 and to Theorem 16
 
-  The exhaustive search of the paper's Section IV-D runs, for each orbit
-  composition, over the S3-symmetric edge lists of a candidate space
-  (`SymCandidate`), and judges each of them on the eight inputs (`gadgetK`).
-  This file says what the candidate space is, that the search procedure
-  visits all of it, and what the search returns. No statement uses a run of
-  the search, and all depend on the standard axioms only.
+  The search works, for each orbit composition, on the S3-symmetric edge
+  lists of a candidate space (`SymCandidate`). The judge `gadgetK` tests a
+  candidate on the eight inputs. This file says what the candidate space
+  is, that the search procedure finds every valid candidate in it and
+  reports only valid ones, and what the search returns. No statement uses a
+  run of the search, and all depend on the standard axioms only.
 
   The candidate space and Definition 1.
-  * `gadget_is_candidate`: every valid gadget of Definition 1 is, after a
-    relabeling of its vertices, a candidate that passes the judge, and its
-    orbit composition is in the list that the search visits.
+  * `gadget_is_candidate`: every gadget of Definition 1 is, after a
+    relabeling of its vertices, a candidate of one of the compositions, and
+    it is valid exactly when the candidate passes the judge.
   * `candidate_is_gadget`: every S3-symmetric candidate is a gadget of
     Definition 1, with as many auxiliary vertices as its composition
     counts, and it passes the judge exactly when the gadget is valid.
@@ -27,8 +27,8 @@ import search.Search
     They follow from Theorem 16 (`proof/Theorem16.lean`).
 
   The search procedure (`searchSlice`).
-  * `search_finds_every_valid_candidate`: every candidate that passes the
-    judge is in the found list of the search.
+  * `search_finds_every_valid_candidate`: for every candidate that passes
+    the judge, the found list contains an edge list with the same edge set.
   * `search_finds_only_valid_candidates`: every graph in the found list is a
     candidate that passes the judge.
   * `search_finds_every_valid_gadget`: so every valid gadget of
@@ -52,19 +52,49 @@ variable {V : Type}
 
 -- ------------------------------------------ Definition 1 → the search space
 
-/-- The search space covers Definition 1. Let `g` be a valid S3-symmetric
-    clause gadget on a finite vertex set. Its auxiliary orbits, listed by
-    size, are an orbit composition `g.parts` that the search visits; the
-    relabeling `g.toVertex` of its vertices is injective, sends the literals
-    and the anchors to those of the candidate space, commutes with the two
-    actions, and turns adjacency into membership in the edge list
-    `g.edgeList`; this edge list is an S3-symmetric candidate, and it passes
-    the judge. -/
-theorem gadget_is_candidate [Finite V] (g : Gadget V) (hv : g.Valid) :
+/-- The relabeling of a gadget reaches every vertex of the candidate space:
+    it is injective, and the gadget and the candidate space have the same
+    number of vertices. -/
+theorem Gadget.toVertex_onto [Finite V] (g : Gadget V) :
+    ∀ w ∈ g.U.vertices, ∃ v, g.toVertex v = w := by
+  classical
+  have : Fintype V := Fintype.ofFinite V
+  have hlen : g.U.vertices.length = Fintype.card V := by
+    rw [vertices_length]
+    show (g.parts ++ [1, 1, 1]).sum + 3 = Fintype.card V
+    have h3 : ([1, 1, 1] : List Nat).sum = 3 := rfl
+    rw [List.sum_append, g.parts_sum, h3, ← Nat.card_eq_fintype_card, g.card_eq]
+  have hsub : Finset.univ.image g.toVertex ⊆ g.U.vertices.toFinset := by
+    intro w hw
+    obtain ⟨v, -, rfl⟩ := Finset.mem_image.mp hw
+    exact List.mem_toFinset.mpr (g.toVertex_mem v)
+  have hcard : g.U.vertices.toFinset.card ≤ (Finset.univ.image g.toVertex).card := by
+    rw [Finset.card_image_of_injective _ g.toVertex_injective, Finset.card_univ,
+      List.toFinset_card_of_nodup (vertices_nodup g.U), hlen]
+  have heq := Finset.eq_of_subset_of_card_le hsub hcard
+  intro w hw
+  have hw' : w ∈ Finset.univ.image g.toVertex := by
+    rw [heq]
+    exact List.mem_toFinset.mpr hw
+  obtain ⟨v, -, hv⟩ := Finset.mem_image.mp hw'
+  exact ⟨v, hv⟩
+
+/-- The search space covers Definition 1. Let `g` be an S3-symmetric clause
+    gadget on a finite vertex set, valid or not. Its auxiliary orbits, listed
+    by size, are an orbit composition `g.parts` of the list `compositions`;
+    the relabeling `g.toVertex` is a bijection from the vertices of `g` onto
+    the vertices of the candidate space, sends the literals and the anchors
+    to those of the candidate space, commutes with the two actions, and
+    turns adjacency into membership in the edge list `g.edgeList`; this edge
+    list is an S3-symmetric candidate, and `g` is valid exactly when it
+    passes the judge. -/
+theorem gadget_is_candidate [Finite V] (g : Gadget V) :
     g.parts ∈ compositions (Nat.card {v // g.IsAux v}) [1, 2, 3, 6] ∧
     Statement.SymCandidate g.parts g.edgeList ∧
-    gadgetK threeColoring g.parts g.edgeList false = some 1 ∧
+    (g.Valid ↔ gadgetK threeColoring g.parts g.edgeList false = some 1) ∧
     Function.Injective g.toVertex ∧
+    (∀ v, g.toVertex v ∈ g.U.vertices) ∧
+    (∀ w ∈ g.U.vertices, ∃ v, g.toVertex v = w) ∧
     (∀ i, g.toVertex (g.lit i) = .lit i.val) ∧
     g.toVertex g.gT = .aux g.parts.length 0 ∧
     g.toVertex g.gF = .aux (g.parts.length + 1) 0 ∧
@@ -82,7 +112,8 @@ theorem gadget_is_candidate [Finite V] (g : Gadget V) (hv : g.Valid) :
     rw [g.toVertex_gB, g.parts_length]
   have hadj : ∀ u v, g.G.Adj u v ↔ normEdge (g.toVertex u, g.toVertex v) ∈ g.edgeList :=
     fun _ _ => g.adj_iff
-  exact ⟨h1, g.symCandidate, g.gadgetK_of_valid hv, g.toVertex_injective, g.toVertex_lit,
+  exact ⟨h1, g.symCandidate, g.valid_iff, g.toVertex_injective, g.toVertex_mem,
+    g.toVertex_onto, g.toVertex_lit,
     hT, hF, hB, g.toVertex_map, hadj⟩
 
 -- ------------------------------------------ the search space → Definition 1
@@ -163,9 +194,9 @@ theorem valid_symmetric_gadget_up_to_six_auxiliary_vertices_is_trident :
 
 -- --------------------------------------------------- the search procedure
 
-/-- The search finds every valid candidate: an S3-symmetric candidate that
-    passes the judge is in the found list of the search of its composition,
-    up to the order of its edges. -/
+/-- The search finds every valid candidate: for an S3-symmetric candidate
+    that passes the judge, the found list of the search of its composition
+    contains an edge list with the same edge set. -/
 theorem search_finds_every_valid_candidate :
     ∀ k, ∀ parts ∈ compositions k [1, 2, 3, 6], ∀ g : List Edge,
       SymCandidate parts g → ∀ b, gadgetK threeColoring parts g false = some b →
@@ -240,7 +271,7 @@ open Statement
 
   The package `trident-symmetric-gadget-proof` of this repository obtains
   the six statements below by running the search at build time with compiled
-  code (`native_decide`, about 8.5 hours). Here they have the same names and
+  code (`native_decide`, about 9 hours). Here they have the same names and
   the same statements, and they follow from Theorem 16 without a run. -/
 
 theorem sym_empty_13 : (searchSlice threeColoring [1, 3] true).2.found = [] :=
@@ -278,15 +309,15 @@ open Atlas
 
 /-- The search covers Definition 1: every valid S3-symmetric clause gadget on
     a finite vertex set is found by the search. Its orbit composition
-    `g.parts` is one of the compositions that the search visits, and the
-    found list of that composition contains the relabeled edge list of the
-    gadget, up to the order of its edges. -/
+    `g.parts` is in the list `compositions`, and the found list of that
+    composition contains an edge list with the edge set of the relabeled
+    gadget. -/
 theorem search_finds_every_valid_gadget {V : Type} [Finite V] (g : Gadget V) (hv : g.Valid) :
     g.parts ∈ compositions (Nat.card {v // g.IsAux v}) [1, 2, 3, 6] ∧
     ∃ g', (g', 1) ∈ (searchSlice threeColoring g.parts true).2.found ∧
       ∀ e, e ∈ g.edgeList ↔ e ∈ g' := by
-  obtain ⟨h1, hsym, hK, -⟩ := gadget_is_candidate g hv
-  exact ⟨h1, searchSlice_complete g.parts g.parts_legal hsym hK⟩
+  obtain ⟨h1, hsym, hK, -⟩ := gadget_is_candidate g
+  exact ⟨h1, searchSlice_complete g.parts g.parts_legal hsym (hK.mp hv)⟩
 
 end Def1
 
@@ -333,3 +364,69 @@ info: 'Atlas.sym_empty_1113' depends on axioms: [propext, Classical.choice, Quot
 -/
 #guard_msgs in
 #print axioms Atlas.sym_empty_1113
+/--
+info: 'Atlas.Statement.trident_is_symmetric_candidate' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.Statement.trident_is_symmetric_candidate
+/--
+info: 'Atlas.Statement.trident_is_valid' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms Atlas.Statement.trident_is_valid
+/--
+info: 'Atlas.Statement.no_valid_symmetric_gadget_below_six_auxiliary_vertices' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.Statement.no_valid_symmetric_gadget_below_six_auxiliary_vertices
+/--
+info: 'Atlas.Statement.valid_symmetric_gadget_up_to_six_auxiliary_vertices_is_trident' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.Statement.valid_symmetric_gadget_up_to_six_auxiliary_vertices_is_trident
+/--
+info: 'Atlas.Statement.search_finds_every_valid_candidate' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.Statement.search_finds_every_valid_candidate
+/--
+info: 'Atlas.Statement.search_finds_only_valid_candidates' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.Statement.search_finds_only_valid_candidates
+/--
+info: 'Atlas.Statement.search_finds_nothing_at_six_outside_trident_slice' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.Statement.search_finds_nothing_at_six_outside_trident_slice
+/--
+info: 'Atlas.sym_empty_13' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.sym_empty_13
+/--
+info: 'Atlas.sym_empty_23' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.sym_empty_23
+/--
+info: 'Atlas.sym_empty_113' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.sym_empty_113
+/--
+info: 'Atlas.sym_empty_6' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.sym_empty_6
+/--
+info: 'Atlas.sym_empty_123' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms Atlas.sym_empty_123
