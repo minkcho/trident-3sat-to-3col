@@ -129,23 +129,20 @@ checks this.
 
 ## Formal verification
 
-The folder `own-proof-trident_minimum_unique/` holds a formal proof of
-Theorem 16 in Lean 4 with Mathlib that follows the paper's own argument, the
-lemma chain of Section IV, without a search (completed by Claude, under
-evaluation by Human). It depends on Lean's standard axioms only and builds
-in less than a minute once Mathlib is in place. Its report
-(`report/proof-report.pdf`) gives the Lean statement of each lemma next to
-the paper's.
+The folder `paper-proof-and-search-trident_minimum_unique/` holds a formal
+proof of Theorem 16 in Lean 4 with Mathlib that follows the paper's own
+argument, the lemma chain of Section IV (completed by Claude, under
+evaluation by Human). It also ties the search of Section IV-D to this proof:
+the candidate space of the search is exactly the set of gadgets of
+Definition 1, the search visits every candidate, and what the search returns
+follows from Theorem 16. No statement in it uses a run of the search or
+compiled code. It depends on Lean's standard axioms only and builds in less
+than a minute once Mathlib is in place. Its report
+(`report/proof-report.pdf`) gives the Lean statements next to the paper's.
 
 The folder `trident-symmetric-gadget-proof/` holds the formal verification in
 Lean 4 with Mathlib, completed by Claude (under evaluation by Human). Its
 README says where to start.
-
-The folder `compact-proof-trident_minimum_unique/` holds the same proof cut
-down to the declarations its statements use. It also states Theorem 16 for
-the paper's Definition 1 in Mathlib terms and derives it from the search
-result by the paper's Lemma 6. Its report (`report/proof-report.pdf`) explains
-the statements, the proof and the trusted base.
 
 ## Provenance
 
