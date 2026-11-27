@@ -1,0 +1,15 @@
+name = "paper-proof-and-search-trident_minimum_unique"
+defaultTargets = ["proof", "search"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.33.0"
+
+[[lean_lib]]
+name = "proof"
+globs = ["proof.+"]
+
+[[lean_lib]]
+name = "search"
+globs = ["search.+"]
